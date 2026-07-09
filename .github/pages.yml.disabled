@@ -1,3 +1,9 @@
+# DISABLED — move to .github/workflows/pages.yml to enable auto-deploy.
+# (Pushing workflow files requires a token with the `workflow` scope:
+#  run `gh auth refresh -h github.com -s workflow` first.)
+# Until then the demo is deployed manually to the gh-pages branch;
+# Pages must then be switched back to build_type=workflow.
+
 name: Deploy demo to GitHub Pages
 
 on:
