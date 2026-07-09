@@ -1,9 +1,11 @@
 export function Sparkline({
   values,
+  color = 'var(--series-1)',
   width = 56,
   height = 22,
 }: {
   values: number[];
+  color?: string;
   width?: number;
   height?: number;
 }) {
@@ -25,11 +27,14 @@ export function Sparkline({
 
   return (
     <svg width={width} height={height} aria-hidden="true" className="shrink-0">
-      <polygon points={`0,${height} ${pts} ${width},${height}`} fill="var(--accent-weak)" />
+      <polygon
+        points={`0,${height} ${pts} ${width},${height}`}
+        fill={`color-mix(in srgb, ${color} 14%, transparent)`}
+      />
       <polyline
         points={pts}
         fill="none"
-        stroke="var(--series-1)"
+        stroke={color}
         strokeWidth="1.5"
         strokeLinejoin="round"
       />

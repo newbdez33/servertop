@@ -15,6 +15,13 @@
   --series-1: #4a3aa7;
   --series-1-soft: #b9aff0;
   --series-2: #1baf7a;
+  /* Per-metric domain hues (CVD-validated as a set) */
+  --cpu: #4a3aa7;
+  --mem: #1baf7a;
+  --mem-soft: #8fdec2;
+  --disk: #c8497f;
+  --net-rx: #2a78d6;
+  --net-tx: #eb6834;
   --good: #0ca30c;
   --warn: #fab219;
   --crit: #d03b3b;
@@ -38,6 +45,12 @@
     --series-1: #9085e9;
     --series-1-soft: #4a3aa7;
     --series-2: #199e70;
+    --cpu: #9085e9;
+    --mem: #199e70;
+    --mem-soft: #0e6b4c;
+    --disk: #d55181;
+    --net-rx: #3987e5;
+    --net-tx: #d95926;
     --shadow: none;
   }
 }
@@ -56,6 +69,12 @@
   --series-1: #9085e9;
   --series-1-soft: #4a3aa7;
   --series-2: #199e70;
+  --cpu: #9085e9;
+  --mem: #199e70;
+  --mem-soft: #0e6b4c;
+  --disk: #d55181;
+  --net-rx: #3987e5;
+  --net-tx: #d95926;
   --shadow: none;
 }
 

@@ -53,6 +53,7 @@ export function StatTiles({
           </>
         }
         values={spark(h => h.cpu)}
+        color="var(--cpu)"
       />
       <Tile
         i={1}
@@ -66,6 +67,7 @@ export function StatTiles({
           </>
         }
         values={spark(h => h.mem)}
+        color="var(--mem)"
       />
       <Tile
         i={2}
@@ -83,6 +85,7 @@ export function StatTiles({
           )
         }
         values={[]}
+        color="var(--disk)"
       />
       <Tile
         i={3}
@@ -97,6 +100,7 @@ export function StatTiles({
           </>
         }
         values={spark(h => toMBs(h.rx))}
+        color="var(--net-rx)"
       />
     </>
   );
@@ -109,6 +113,7 @@ function Tile({
   unit,
   ctx,
   values,
+  color,
   small = false,
 }: {
   i: number;
@@ -117,6 +122,7 @@ function Tile({
   unit: string;
   ctx: React.ReactNode;
   values: number[];
+  color: string;
   small?: boolean;
 }) {
   return (
@@ -129,7 +135,7 @@ function Tile({
           {value}
           {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
         </span>
-        <Sparkline values={values} />
+        <Sparkline values={values} color={color} />
       </div>
       <span className="text-[10.5px] text-ink-3">{ctx}</span>
     </Card>
@@ -167,7 +173,7 @@ export function CpuCard({
         series={[
           {
             name: 'CPU',
-            color: 'var(--series-1)',
+            color: 'var(--cpu)',
             values: history.map(h => h.cpu),
             area: true,
           },
@@ -195,13 +201,13 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
 
   const rows: Array<{ swatch: React.ReactNode; label: string; value: string; note: string }> = [
     {
-      swatch: <Swatch color="var(--series-1)" />,
+      swatch: <Swatch color="var(--mem)" />,
       label: 'Used',
       value: `${fmtGB(mem.used, 1)} GB`,
       note: `${usedPct.toFixed(0)}%`,
     },
     {
-      swatch: <Swatch color="var(--series-1-soft)" />,
+      swatch: <Swatch color="var(--mem-soft)" />,
       label: 'Cache / buffer',
       value: `${fmtGB(mem.cached, 1)} GB`,
       note: `${cachedPct.toFixed(0)}%`,
@@ -218,10 +224,10 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
     <Card i={6} className="col-span-12 md:col-span-6 lg:col-span-4">
       <CardHead title="Memory" sub={`${fmtGB(mem.total)} GB total`} />
       <div className="mb-1.5 flex h-2.5 gap-[2px] overflow-hidden rounded-md" aria-hidden="true">
-        <span className="h-full" style={{ width: `${usedPct}%`, background: 'var(--series-1)' }} />
+        <span className="h-full" style={{ width: `${usedPct}%`, background: 'var(--mem)' }} />
         <span
           className="h-full"
-          style={{ width: `${cachedPct}%`, background: 'var(--series-1-soft)' }}
+          style={{ width: `${cachedPct}%`, background: 'var(--mem-soft)' }}
         />
         <span className="h-full flex-1" style={{ background: 'var(--surface-2)' }} />
       </div>
@@ -276,13 +282,13 @@ export function NetworkCard({
         right={
           <span className="flex items-center gap-3 text-[11px] text-ink-2">
             <span className="flex items-center gap-1.5">
-              <Swatch color="var(--series-1)" /> Down{' '}
+              <Swatch color="var(--net-rx)" /> Down{' '}
               <span className="num font-semibold text-ink">
                 {primary ? fmtRate(primary.rxSec) : '—'}
               </span>
             </span>
             <span className="flex items-center gap-1.5">
-              <Swatch color="var(--series-2)" /> Up{' '}
+              <Swatch color="var(--net-tx)" /> Up{' '}
               <span className="num font-semibold text-ink">
                 {primary ? fmtRate(primary.txSec) : '—'}
               </span>
@@ -292,8 +298,8 @@ export function NetworkCard({
       />
       <TimeChart
         series={[
-          { name: 'Down', color: 'var(--series-1)', values: rx, area: true },
-          { name: 'Up', color: 'var(--series-2)', values: tx },
+          { name: 'Down', color: 'var(--net-rx)', values: rx, area: true },
+          { name: 'Up', color: 'var(--net-tx)', values: tx },
         ]}
         ts={history.map(h => h.ts)}
         yMax={yMax}
@@ -325,6 +331,7 @@ export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
             label={d.mount}
             pct={d.usedPct}
             tone={d.usedPct > 95 ? 'crit' : d.usedPct > 85 ? 'warn' : 'default'}
+            color="var(--disk)"
           />
         ))}
         {disks.length === 0 && <span className="text-[11px] text-ink-3">No disk data</span>}
@@ -390,8 +397,8 @@ export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
                   <span className="inline-flex items-center justify-end gap-1.5">
                     <span className="block h-[7px] w-[46px] overflow-hidden rounded-full bg-surface-2">
                       <span
-                        className="block h-full rounded-full bg-series-1"
-                        style={{ width: `${Math.min(100, p.cpu * 2)}%` }}
+                        className="block h-full rounded-full"
+                        style={{ width: `${Math.min(100, p.cpu * 2)}%`, background: 'var(--cpu)' }}
                       />
                     </span>
                     <span className="num">{p.cpu.toFixed(1)}%</span>

@@ -82,22 +82,25 @@ export function BarRow({
   label,
   pct,
   tone = 'default',
+  color = 'var(--series-1)',
   decimals = 1,
 }: {
   label: string;
   pct: number;
   tone?: 'default' | 'warn' | 'crit';
+  /** Fill color when tone is 'default' (CSS color, e.g. 'var(--disk)') */
+  color?: string;
   decimals?: number;
 }) {
-  const fill = tone === 'crit' ? 'bg-crit' : tone === 'warn' ? 'bg-warn' : 'bg-series-1';
+  const fill = tone === 'crit' ? 'var(--crit)' : tone === 'warn' ? 'var(--warn)' : color;
   const clamped = Math.min(100, Math.max(0, pct));
   return (
     <div className="grid grid-cols-[3.4rem_1fr_2.8rem] items-center gap-2">
       <span className="num truncate text-[11px] text-ink-2">{label}</span>
       <span className="block h-[7px] overflow-hidden rounded-full bg-surface-2">
         <span
-          className={`block h-full rounded-full ${fill} transition-[width] duration-500`}
-          style={{ width: `${clamped}%` }}
+          className="block h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${clamped}%`, background: fill }}
         />
       </span>
       <span className="num text-right text-[11px] text-ink-2">{pct.toFixed(decimals)}%</span>
