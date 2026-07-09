@@ -11,7 +11,7 @@ export function Card({
 }) {
   return (
     <section
-      className={`card-rise min-w-0 rounded-[11px] border border-line bg-surface p-3 [box-shadow:var(--shadow)] ${className}`}
+      className={`card-rise min-w-0 rounded-[10px] border border-line bg-surface p-2.5 [box-shadow:var(--shadow)] ${className}`}
       style={{ '--i': i } as CSSProperties}
     >
       {children}
@@ -29,10 +29,10 @@ export function CardHead({
   right?: ReactNode;
 }) {
   return (
-    <div className="mb-2 flex items-start justify-between gap-2">
+    <div className="mb-1.5 flex items-start justify-between gap-2">
       <div>
         <h2 className="text-[12px] font-semibold tracking-wide text-ink-2">{title}</h2>
-        {sub && <span className="text-[11px] text-ink-3">{sub}</span>}
+        {sub && <span className="text-[10.5px] text-ink-3">{sub}</span>}
       </div>
       {right}
     </div>

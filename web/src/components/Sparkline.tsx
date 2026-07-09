@@ -1,7 +1,7 @@
 export function Sparkline({
   values,
-  width = 64,
-  height = 26,
+  width = 56,
+  height = 22,
 }: {
   values: number[];
   width?: number;

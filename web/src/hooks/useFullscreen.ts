@@ -12,17 +12,23 @@ interface FsElement extends HTMLElement {
 
 const doc = document as FsDocument;
 
-const fsElement = (): Element | null =>
+export const fullscreenElement = (): Element | null =>
   document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
 
 export const fullscreenSupported: boolean =
   document.fullscreenEnabled || Boolean(doc.webkitFullscreenEnabled);
 
+export function enterFullscreen(): void {
+  const el = document.documentElement as FsElement;
+  if (el.requestFullscreen) void el.requestFullscreen().catch(() => {});
+  else el.webkitRequestFullscreen?.();
+}
+
 export function useFullscreen(): { active: boolean; toggle: () => void } {
-  const [active, setActive] = useState<boolean>(() => Boolean(fsElement()));
+  const [active, setActive] = useState<boolean>(() => Boolean(fullscreenElement()));
 
   useEffect(() => {
-    const onChange = (): void => setActive(Boolean(fsElement()));
+    const onChange = (): void => setActive(Boolean(fullscreenElement()));
     document.addEventListener('fullscreenchange', onChange);
     document.addEventListener('webkitfullscreenchange', onChange);
     return () => {
@@ -32,13 +38,11 @@ export function useFullscreen(): { active: boolean; toggle: () => void } {
   }, []);
 
   const toggle = (): void => {
-    if (fsElement()) {
+    if (fullscreenElement()) {
       if (document.exitFullscreen) void document.exitFullscreen().catch(() => {});
       else doc.webkitExitFullscreen?.();
     } else {
-      const el = document.documentElement as FsElement;
-      if (el.requestFullscreen) void el.requestFullscreen().catch(() => {});
-      else el.webkitRequestFullscreen?.();
+      enterFullscreen();
     }
   };
 

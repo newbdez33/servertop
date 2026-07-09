@@ -1,6 +1,5 @@
 import {
   ContainerCard,
-  CoresCard,
   CpuCard,
   DiskCard,
   MemoryCard,
@@ -36,27 +35,23 @@ export function Dashboard({
         onLogout={canLogout ? onAuthFailed : null}
       />
 
-      <main className="grid grid-cols-12 gap-2.5 px-4 pt-3 pb-6">
+      <main className="grid grid-cols-12 gap-2 px-3 pt-2 pb-2">
         {snapshot ? (
           <>
             <StatTiles snapshot={snapshot} history={history} />
             <CpuCard snapshot={snapshot} history={history} intervalMs={intervalMs} />
-            <CoresCard snapshot={snapshot} system={system} />
-            <MemoryCard snapshot={snapshot} />
             <NetworkCard snapshot={snapshot} history={history} intervalMs={intervalMs} />
+            <MemoryCard snapshot={snapshot} />
             <DiskCard snapshot={snapshot} />
+            <SystemCard system={system} />
             <ProcessCard processes={processes} />
             <ContainerCard containers={containers} available={system?.dockerAvailable ?? true} />
-            <SystemCard system={system} />
           </>
         ) : (
           <div className="col-span-12 grid h-60 place-items-center text-[12px] text-ink-3">
             {status === 'offline' ? 'Cannot reach the server — retrying…' : 'Connecting…'}
           </div>
         )}
-        <p className="col-span-12 pt-1 text-center text-[11px] text-ink-3">
-          Read-only view · metrics update every {(intervalMs / 1000).toFixed(0)}s over WebSocket
-        </p>
       </main>
     </div>
   );

@@ -10,7 +10,7 @@ import { HISTORY_LEN } from '../hooks/useLive';
 import { fmtAgo, fmtBytes, fmtGB, fmtRate, fmtUptime, niceMax, toMBs } from '../lib/format';
 import { Sparkline } from './Sparkline';
 import { TimeChart } from './TimeChart';
-import { BarRow, Card, CardHead, Dot, Pill, Swatch } from './ui';
+import { BarRow, Card, CardHead, Dot, Swatch } from './ui';
 
 const MB = 1024 ** 2;
 
@@ -120,18 +120,18 @@ function Tile({
   small?: boolean;
 }) {
   return (
-    <Card i={i} className="col-span-12 flex flex-col gap-1.5 sm:col-span-6 lg:col-span-3">
-      <span className="text-[11.5px] font-semibold text-ink-2">{label}</span>
+    <Card i={i} className="col-span-12 flex flex-col gap-1 sm:col-span-6 lg:col-span-3">
+      <span className="text-[11px] font-semibold text-ink-2">{label}</span>
       <div className="flex items-end justify-between gap-2">
         <span
-          className={`num font-semibold leading-none tracking-tight ${small ? 'text-[16px]' : 'text-[21px]'}`}
+          className={`num font-semibold leading-none tracking-tight ${small ? 'text-[15px]' : 'text-[19px]'}`}
         >
           {value}
-          {unit && <small className="text-[12px] font-medium text-ink-3">{unit}</small>}
+          {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
         </span>
         <Sparkline values={values} />
       </div>
-      <span className="text-[11px] text-ink-3">{ctx}</span>
+      <span className="text-[10.5px] text-ink-3">{ctx}</span>
     </Card>
   );
 }
@@ -148,12 +148,12 @@ export function CpuCard({
   intervalMs: number;
 }) {
   return (
-    <Card i={4} className="col-span-12 lg:col-span-8">
+    <Card i={4} className="col-span-12 lg:col-span-6">
       <CardHead
         title="CPU Usage"
         sub={
           <>
-            {windowLabel(intervalMs)} · sampled every {(intervalMs / 1000).toFixed(0)}s
+            {windowLabel(intervalMs)} · every {(intervalMs / 1000).toFixed(0)}s
             {snapshot.cpu.tempC !== null && <> · {snapshot.cpu.tempC}°C</>}
           </>
         }
@@ -174,33 +174,11 @@ export function CpuCard({
         ]}
         ts={history.map(h => h.ts)}
         yMax={100}
-        yTicks={[0, 25, 50, 75, 100]}
+        yTicks={[0, 50, 100]}
         yLab={v => `${v}%`}
         fmt={v => `${v.toFixed(1)}%`}
-        height={150}
+        height={90}
       />
-    </Card>
-  );
-}
-
-export function CoresCard({ snapshot, system }: { snapshot: MetricsSnapshot; system: SystemInfo | null }) {
-  const cores = snapshot.cpu.perCore;
-  // Many-core machines: two columns and a capped, scrollable list so this
-  // card doesn't stretch the whole row
-  const twoCols = cores.length > 12;
-  return (
-    <Card i={5} className="col-span-12 lg:col-span-4">
-      <CardHead
-        title="CPU Cores"
-        sub={system ? `${system.cpuModel} · ${system.cores} cores` : undefined}
-      />
-      <div
-        className={`grid max-h-[335px] gap-x-4 gap-y-[7px] overflow-y-auto ${twoCols ? 'grid-cols-2' : 'grid-cols-1'}`}
-      >
-        {cores.map((v, i) => (
-          <BarRow key={i} label={`Core ${i}`} pct={v} decimals={0} />
-        ))}
-      </div>
     </Card>
   );
 }
@@ -237,9 +215,9 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
   ];
 
   return (
-    <Card i={6} className="col-span-12 lg:col-span-4">
+    <Card i={6} className="col-span-12 md:col-span-6 lg:col-span-4">
       <CardHead title="Memory" sub={`${fmtGB(mem.total)} GB total`} />
-      <div className="mb-2 flex h-3 gap-[2px] overflow-hidden rounded-md" aria-hidden="true">
+      <div className="mb-1.5 flex h-2.5 gap-[2px] overflow-hidden rounded-md" aria-hidden="true">
         <span className="h-full" style={{ width: `${usedPct}%`, background: 'var(--series-1)' }} />
         <span
           className="h-full"
@@ -251,7 +229,7 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
         {rows.map((r, idx) => (
           <div
             key={r.label}
-            className={`flex items-center gap-2 py-[5px] text-[11.5px] ${idx ? 'border-t border-line' : ''}`}
+            className={`flex items-center gap-2 py-[3px] text-[11px] ${idx ? 'border-t border-line' : ''}`}
           >
             {r.swatch}
             <span className="flex-1 text-ink-2">{r.label}</span>
@@ -260,7 +238,7 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
             </span>
           </div>
         ))}
-        <div className="flex items-center gap-2 border-t border-line py-[5px] text-[11.5px]">
+        <div className="flex items-center gap-2 border-t border-line py-[3px] text-[11px]">
           <span className="size-2 shrink-0" />
           <span className="flex-1 text-ink-2">Swap</span>
           <span className="num">
@@ -288,10 +266,10 @@ export function NetworkCard({
   const rx = history.map(h => toMBs(h.rx));
   const tx = history.map(h => toMBs(h.tx));
   const yMax = niceMax(Math.max(...rx, ...tx, 0.1) * 1.15);
-  const yTicks = [0, yMax / 3, (2 * yMax) / 3, yMax].map(v => +v.toFixed(3));
+  const yTicks = [0, yMax / 2, yMax].map(v => +v.toFixed(3));
 
   return (
-    <Card i={7} className="col-span-12 lg:col-span-8">
+    <Card i={5} className="col-span-12 lg:col-span-6">
       <CardHead
         title={`Network${primary ? ` · ${primary.iface}` : ''}`}
         sub={windowLabel(intervalMs)}
@@ -323,7 +301,7 @@ export function NetworkCard({
         yLab={mbLabel}
         fmt={v => fmtRate(v * MB)}
         endFmt={mbLabel}
-        height={150}
+        height={90}
       />
     </Card>
   );
@@ -335,12 +313,12 @@ export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
   const disks = snapshot.disk;
   const alerts = disks.filter(d => d.usedPct > 85);
   return (
-    <Card i={8} className="col-span-12 lg:col-span-4">
+    <Card i={7} className="col-span-12 md:col-span-6 lg:col-span-4">
       <CardHead
         title="Disk Partitions"
         sub={`${disks.length} mount point${disks.length === 1 ? '' : 's'}`}
       />
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {disks.map(d => (
           <BarRow
             key={d.mount}
@@ -352,9 +330,9 @@ export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
         {disks.length === 0 && <span className="text-[11px] text-ink-3">No disk data</span>}
       </div>
       {alerts.length > 0 && (
-        <div className="mt-2 border-t border-line pt-2">
+        <div className="mt-1.5 border-t border-line pt-1.5">
           {alerts.map(d => (
-            <div key={d.mount} className="flex items-center gap-2 py-0.5 text-[11.5px]">
+            <div key={d.mount} className="flex items-center gap-2 py-0.5 text-[11px]">
               <Dot tone={d.usedPct > 95 ? 'crit' : 'warn'} />
               <span className="flex-1 text-ink-2">
                 <span className="num">{d.mount}</span> usage over {d.usedPct > 95 ? '95' : '85'}%
@@ -374,13 +352,13 @@ export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
   const [sort, setSort] = useState<'cpu' | 'mem'>('cpu');
   const rows = [...processes]
     .sort((a, b) => (sort === 'cpu' ? b.cpu - a.cpu : b.memBytes - a.memBytes))
-    .slice(0, 8);
+    .slice(0, 6);
 
   return (
-    <Card i={9} className="col-span-12 lg:col-span-8">
+    <Card i={9} className="col-span-12 lg:col-span-6">
       <CardHead
         title="Processes"
-        sub={`Top 8 by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
+        sub={`Top 6 by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
         right={
           <button
             onClick={() => setSort(s => (s === 'cpu' ? 'mem' : 'cpu'))}
@@ -443,7 +421,7 @@ export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
 function Th({ children, right = false }: { children: React.ReactNode; right?: boolean }) {
   return (
     <th
-      className={`border-b border-line px-2 py-1 text-[10px] font-semibold tracking-wider whitespace-nowrap text-ink-3 uppercase ${right ? 'text-right' : 'text-left'}`}
+      className={`border-b border-line px-2 py-0.5 text-[10px] font-semibold tracking-wider whitespace-nowrap text-ink-3 uppercase ${right ? 'text-right' : 'text-left'}`}
     >
       {children}
     </th>
@@ -461,7 +439,7 @@ function Td({
 }) {
   return (
     <td
-      className={`border-b border-line px-2 py-[5px] whitespace-nowrap ${right ? 'text-right' : ''} ${className}`}
+      className={`border-b border-line px-2 py-[3px] whitespace-nowrap ${right ? 'text-right' : ''} ${className}`}
     >
       {children}
     </td>
@@ -469,6 +447,8 @@ function Td({
 }
 
 /* ── Docker containers ──────────────────────────────────────────────── */
+
+const MAX_CONTAINERS = 6;
 
 export function ContainerCard({
   containers,
@@ -478,8 +458,15 @@ export function ContainerCard({
   available: boolean;
 }) {
   const running = containers.filter(c => c.state === 'running').length;
+  // Running containers first, capped for a compact single-screen layout
+  const visible = [...containers]
+    .sort((a, b) =>
+      a.state === b.state ? a.name.localeCompare(b.name) : a.state === 'running' ? -1 : 1,
+    )
+    .slice(0, MAX_CONTAINERS);
+  const hidden = containers.length - visible.length;
   return (
-    <Card i={10} className="col-span-12 lg:col-span-8">
+    <Card i={10} className="col-span-12 lg:col-span-6">
       <CardHead
         title="Docker Containers"
         sub={
@@ -506,22 +493,23 @@ export function ContainerCard({
               </tr>
             </thead>
             <tbody>
-              {containers.map(c => (
+              {visible.map(c => (
                 <tr key={c.id} className="hover:bg-surface-2">
                   <Td className="font-semibold">{c.name}</Td>
                   <Td className="num text-ink-3">
-                    <span className="block max-w-[14rem] truncate" title={c.image}>
+                    <span className="block max-w-[11rem] truncate" title={c.image}>
                       {c.image}
                     </span>
                   </Td>
                   <Td>
-                    {c.state === 'running' ? (
-                      <Pill tone="good">Running</Pill>
-                    ) : c.state === 'exited' ? (
-                      <Pill tone="crit">Exited</Pill>
-                    ) : (
-                      <Pill tone="muted">{c.state}</Pill>
-                    )}
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium">
+                      <Dot
+                        tone={
+                          c.state === 'running' ? 'good' : c.state === 'exited' ? 'crit' : 'muted'
+                        }
+                      />
+                      {c.state === 'running' ? 'Running' : c.state === 'exited' ? 'Exited' : c.state}
+                    </span>
                   </Td>
                   <Td right className="num">
                     {c.cpuPct !== null ? `${c.cpuPct.toFixed(1)}%` : '—'}
@@ -550,6 +538,12 @@ export function ContainerCard({
               )}
             </tbody>
           </table>
+          {hidden > 0 && (
+            <p className="m-0 pt-1 text-[10.5px] text-ink-3">
+              +{hidden} more not shown ({containers.filter(c => c.state !== 'running').length}{' '}
+              stopped)
+            </p>
+          )}
         </div>
       )}
     </Card>
@@ -567,18 +561,22 @@ export function SystemCard({ system }: { system: SystemInfo | null }) {
         ['CPU', `${system.cpuModel} ×${system.cores}`],
         ['Memory', `${fmtGB(system.memTotal)} GB`],
         ['IP', system.ip ?? '—'],
-        ['Agent', `ServerTop v${system.agentVersion}`],
       ]
     : [];
 
   return (
-    <Card i={11} className="col-span-12 lg:col-span-4">
-      <CardHead title="System" />
+    <Card i={8} className="col-span-12 md:col-span-6 lg:col-span-4">
+      <CardHead
+        title="System"
+        right={
+          system && <span className="num text-[10.5px] text-ink-3">v{system.agentVersion}</span>
+        }
+      />
       <div>
         {rows.map(([k, v], idx) => (
           <div
             key={k}
-            className={`flex items-center gap-2 py-[5px] text-[11.5px] ${idx ? 'border-t border-line' : ''}`}
+            className={`flex items-center gap-2 py-[3px] text-[11px] ${idx ? 'border-t border-line' : ''}`}
           >
             <span className="flex-1 text-ink-2">{k}</span>
             <span className="num max-w-[60%] truncate" title={v}>
