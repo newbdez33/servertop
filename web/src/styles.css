@@ -22,6 +22,10 @@
   --disk: #c8497f;
   --net-rx: #2a78d6;
   --net-tx: #eb6834;
+  /* Text-safe load gradient (process CPU%, temperature) */
+  --load-low: #067d06;
+  --load-mid: #a66a00;
+  --load-high: #c03636;
   --good: #0ca30c;
   --warn: #fab219;
   --crit: #d03b3b;
@@ -51,6 +55,9 @@
     --disk: #d55181;
     --net-rx: #3987e5;
     --net-tx: #d95926;
+    --load-low: #35c948;
+    --load-mid: #fab219;
+    --load-high: #ef6b6b;
     --shadow: none;
   }
 }
@@ -75,6 +82,9 @@
   --disk: #d55181;
   --net-rx: #3987e5;
   --net-tx: #d95926;
+  --load-low: #35c948;
+  --load-mid: #fab219;
+  --load-high: #ef6b6b;
   --shadow: none;
 }
 

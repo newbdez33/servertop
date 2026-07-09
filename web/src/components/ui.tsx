@@ -21,17 +21,22 @@ export function Card({
 
 export function CardHead({
   title,
+  icon,
   sub,
   right,
 }: {
   title: string;
+  icon?: ReactNode;
   sub?: ReactNode;
   right?: ReactNode;
 }) {
   return (
     <div className="mb-1.5 flex items-start justify-between gap-2">
       <div>
-        <h2 className="text-[12px] font-semibold tracking-wide text-ink-2">{title}</h2>
+        <h2 className="flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-ink-2">
+          {icon}
+          {title}
+        </h2>
         {sub && <span className="text-[10.5px] text-ink-3">{sub}</span>}
       </div>
       {right}

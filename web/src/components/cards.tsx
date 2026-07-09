@@ -8,6 +8,15 @@ import type {
 } from '../../../shared/types';
 import { HISTORY_LEN } from '../hooks/useLive';
 import { fmtAgo, fmtBytes, fmtGB, fmtRate, fmtUptime, niceMax, toMBs } from '../lib/format';
+import {
+  ActivityIcon,
+  BoxIcon,
+  CpuIcon,
+  DiskIcon,
+  InfoIcon,
+  MemIcon,
+  NetIcon,
+} from './icons';
 import { Sparkline } from './Sparkline';
 import { TimeChart } from './TimeChart';
 import { BarRow, Card, CardHead, Dot, Swatch } from './ui';
@@ -23,6 +32,10 @@ const windowLabel = (intervalMs: number): string => {
 /** MB/s axis label with enough precision that adjacent ticks stay distinct */
 const mbLabel = (v: number): string =>
   v >= 1 ? `${+v.toFixed(1)}M` : `${Math.round(v * 1000)}K`;
+
+/** Green → amber → red by load (text-safe tokens) */
+const loadTone = (pct: number): string =>
+  pct >= 70 ? 'var(--load-high)' : pct >= 30 ? 'var(--load-mid)' : 'var(--load-low)';
 
 /* ── Stat tiles ─────────────────────────────────────────────────────── */
 
@@ -44,6 +57,7 @@ export function StatTiles({
       <Tile
         i={0}
         label="CPU"
+        icon={<CpuIcon size={13} color="var(--cpu)" />}
         value={cpu.usage.toFixed(1)}
         unit="%"
         ctx={
@@ -58,6 +72,7 @@ export function StatTiles({
       <Tile
         i={1}
         label="Memory"
+        icon={<MemIcon size={13} color="var(--mem)" />}
         value={memPct.toFixed(1)}
         unit="%"
         ctx={
@@ -72,6 +87,7 @@ export function StatTiles({
       <Tile
         i={2}
         label={rootDisk ? `Disk ${rootDisk.mount}` : 'Disk'}
+        icon={<DiskIcon size={13} color="var(--disk)" />}
         value={rootDisk ? rootDisk.usedPct.toFixed(1) : '—'}
         unit="%"
         ctx={
@@ -90,6 +106,7 @@ export function StatTiles({
       <Tile
         i={3}
         label="Network"
+        icon={<NetIcon size={13} color="var(--net-rx)" />}
         value={`↓${primary ? fmtRate(primary.rxSec).replace(/ /, ' ') : '—'}`}
         unit=""
         small
@@ -109,6 +126,7 @@ export function StatTiles({
 function Tile({
   i,
   label,
+  icon,
   value,
   unit,
   ctx,
@@ -118,6 +136,7 @@ function Tile({
 }: {
   i: number;
   label: string;
+  icon: React.ReactNode;
   value: string;
   unit: string;
   ctx: React.ReactNode;
@@ -127,7 +146,10 @@ function Tile({
 }) {
   return (
     <Card i={i} className="col-span-12 flex flex-col gap-1 sm:col-span-6 lg:col-span-3">
-      <span className="text-[11px] font-semibold text-ink-2">{label}</span>
+      <span className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-2">
+        {icon}
+        {label}
+      </span>
       <div className="flex items-end justify-between gap-2">
         <span
           className={`num font-semibold leading-none tracking-tight ${small ? 'text-[15px]' : 'text-[19px]'}`}
@@ -157,10 +179,23 @@ export function CpuCard({
     <Card i={4} className="col-span-12 lg:col-span-6">
       <CardHead
         title="CPU Usage"
+        icon={<CpuIcon color="var(--cpu)" />}
         sub={
           <>
             {windowLabel(intervalMs)} · every {(intervalMs / 1000).toFixed(0)}s
-            {snapshot.cpu.tempC !== null && <> · {snapshot.cpu.tempC}°C</>}
+            {snapshot.cpu.tempC !== null && (
+              <>
+                {' · '}
+                <span
+                  className="num"
+                  style={{
+                    color: snapshot.cpu.tempC >= 70 ? loadTone(snapshot.cpu.tempC) : undefined,
+                  }}
+                >
+                  {snapshot.cpu.tempC}°C
+                </span>
+              </>
+            )}
           </>
         }
         right={
@@ -222,7 +257,11 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
 
   return (
     <Card i={6} className="col-span-12 md:col-span-6 lg:col-span-4">
-      <CardHead title="Memory" sub={`${fmtGB(mem.total)} GB total`} />
+      <CardHead
+        title="Memory"
+        icon={<MemIcon color="var(--mem)" />}
+        sub={`${fmtGB(mem.total)} GB total`}
+      />
       <div className="mb-1.5 flex h-2.5 gap-[2px] overflow-hidden rounded-md" aria-hidden="true">
         <span className="h-full" style={{ width: `${usedPct}%`, background: 'var(--mem)' }} />
         <span
@@ -278,6 +317,7 @@ export function NetworkCard({
     <Card i={5} className="col-span-12 lg:col-span-6">
       <CardHead
         title={`Network${primary ? ` · ${primary.iface}` : ''}`}
+        icon={<NetIcon color="var(--net-rx)" />}
         sub={windowLabel(intervalMs)}
         right={
           <span className="flex items-center gap-3 text-[11px] text-ink-2">
@@ -322,6 +362,7 @@ export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
     <Card i={7} className="col-span-12 md:col-span-6 lg:col-span-4">
       <CardHead
         title="Disk Partitions"
+        icon={<DiskIcon color="var(--disk)" />}
         sub={`${disks.length} mount point${disks.length === 1 ? '' : 's'}`}
       />
       <div className="flex flex-col gap-2">
@@ -365,6 +406,7 @@ export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
     <Card i={9} className="col-span-12 lg:col-span-6">
       <CardHead
         title="Processes"
+        icon={<ActivityIcon color="var(--cpu)" />}
         sub={`Top 6 by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
         right={
           <button
@@ -398,10 +440,15 @@ export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
                     <span className="block h-[7px] w-[46px] overflow-hidden rounded-full bg-surface-2">
                       <span
                         className="block h-full rounded-full"
-                        style={{ width: `${Math.min(100, p.cpu * 2)}%`, background: 'var(--cpu)' }}
+                        style={{
+                          width: `${Math.min(100, p.cpu * 2)}%`,
+                          background: loadTone(p.cpu),
+                        }}
                       />
                     </span>
-                    <span className="num">{p.cpu.toFixed(1)}%</span>
+                    <span className="num font-semibold" style={{ color: loadTone(p.cpu) }}>
+                      {p.cpu.toFixed(1)}%
+                    </span>
                   </span>
                 </Td>
                 <Td right className="num">
@@ -476,6 +523,7 @@ export function ContainerCard({
     <Card i={10} className="col-span-12 lg:col-span-6">
       <CardHead
         title="Docker Containers"
+        icon={<BoxIcon color="var(--net-rx)" />}
         sub={
           available
             ? `${containers.length} container${containers.length === 1 ? '' : 's'} · ${running} running`
@@ -575,6 +623,7 @@ export function SystemCard({ system }: { system: SystemInfo | null }) {
     <Card i={8} className="col-span-12 md:col-span-6 lg:col-span-4">
       <CardHead
         title="System"
+        icon={<InfoIcon color="var(--accent)" />}
         right={
           system && <span className="num text-[10.5px] text-ink-3">v{system.agentVersion}</span>
         }
