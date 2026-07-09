@@ -1,0 +1,26 @@
+# ServerTop — deploy on the Linux server you want to monitor.
+#
+# The privileged settings below are what let the agent see through container
+# isolation and read HOST metrics. They are required features, not optional:
+#   pid: host          → host process list
+#   network_mode: host → host interface traffic (and direct port binding)
+#   /:/host:ro         → host disk partition usage
+#   docker.sock (ro)   → container list & stats
+#   /sys (ro)          → CPU temperature
+services:
+  servertop:
+    build: .
+    container_name: servertop
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    environment:
+      - ACCESS_TOKEN=change-me          # REQUIRED: set your own token
+      - PORT=3000
+      # - SAMPLE_INTERVAL=2000          # ms, default 2000
+      # - HISTORY_WINDOW=3600           # seconds of in-memory history
+    volumes:
+      - /:/host:ro,rslave
+      - /sys:/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/os-release:/etc/os-release:ro

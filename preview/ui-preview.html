@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>ServerTop · UI Preview</title>
+</head>
+<body>
+<style>
+  :root {
+    --page: #f3f2f6;
+    --surface: #fcfbfd;
+    --surface-2: #efedf3;
+    --ink: #1a1721;
+    --ink-2: #514b60;
+    --ink-3: #8d87a0;
+    --line: rgba(26, 23, 33, 0.09);
+    --grid: #e8e6ee;
+    --accent: #5142c0;
+    --accent-weak: rgba(81, 66, 192, 0.10);
+    --series-1: #4a3aa7;
+    --series-1-soft: #b9aff0;
+    --series-2: #1baf7a;
+    --good: #0ca30c;
+    --warn: #fab219;
+    --crit: #d03b3b;
+    --shadow: 0 1px 2px rgba(26, 23, 33, 0.04), 0 4px 16px rgba(26, 23, 33, 0.05);
+    --font-ui: "Avenir Next", Avenir, "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #100e14;
+      --surface: #17161b;
+      --surface-2: #1e1c24;
+      --ink: #efedf5;
+      --ink-2: #aaa5b8;
+      --ink-3: #6f6a80;
+      --line: rgba(239, 237, 245, 0.08);
+      --grid: #29262f;
+      --accent: #9085e9;
+      --accent-weak: rgba(144, 133, 233, 0.14);
+      --series-1: #9085e9;
+      --series-1-soft: #4a3aa7;
+      --series-2: #199e70;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="light"] {
+    --page: #f3f2f6;
+    --surface: #fcfbfd;
+    --surface-2: #efedf3;
+    --ink: #1a1721;
+    --ink-2: #514b60;
+    --ink-3: #8d87a0;
+    --line: rgba(26, 23, 33, 0.09);
+    --grid: #e8e6ee;
+    --accent: #5142c0;
+    --accent-weak: rgba(81, 66, 192, 0.10);
+    --series-1: #4a3aa7;
+    --series-1-soft: #b9aff0;
+    --series-2: #1baf7a;
+    --shadow: 0 1px 2px rgba(26, 23, 33, 0.04), 0 4px 16px rgba(26, 23, 33, 0.05);
+  }
+  :root[data-theme="dark"] {
+    --page: #100e14;
+    --surface: #17161b;
+    --surface-2: #1e1c24;
+    --ink: #efedf5;
+    --ink-2: #aaa5b8;
+    --ink-3: #6f6a80;
+    --line: rgba(239, 237, 245, 0.08);
+    --grid: #29262f;
+    --accent: #9085e9;
+    --accent-weak: rgba(144, 133, 233, 0.14);
+    --series-1: #9085e9;
+    --series-1-soft: #4a3aa7;
+    --series-2: #199e70;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .dot.g { background: var(--good); }
+  .dot.y { background: var(--warn); }
+  .dot.r { background: var(--crit); }
+
+  /* ── Top bar ─────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--page) 82%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .tb-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .tb-left h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+  .brand-mini { display: flex; align-items: center; gap: 8px; }
+  .brand-mini b { font-size: 14px; font-weight: 600; letter-spacing: 0.01em; }
+  .tb-sep { width: 1px; height: 18px; background: var(--line); flex: none; }
+  .tb-meta { color: var(--ink-3); font-size: 11.5px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 9px 2px 7px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface);
+  }
+  .pill.good { color: var(--good); }
+  .pill.crit-t { color: var(--crit); }
+  .tb-right { display: flex; align-items: center; gap: 6px; flex: none; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500; color: var(--ink-2);
+    padding: 4px 9px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--surface);
+  }
+  button.chip:hover { background: var(--surface-2); }
+  .chip .num { color: var(--ink); }
+  .icon-btn {
+    display: grid; place-items: center; width: 28px; height: 28px;
+    border-radius: 7px; border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink-2);
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+  :root[data-theme="dark"] .moon, .sun { display: none; }
+  :root[data-theme="dark"] .sun { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .moon { display: none; }
+    :root:not([data-theme]) .sun { display: block; }
+  }
+  :root[data-theme="light"] .moon { display: block; }
+  :root[data-theme="light"] .sun { display: none; }
+
+  /* ── Content grid ────────────────── */
+  .content {
+    width: 100%;
+    padding: 12px 16px 24px;
+    display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px;
+  }
+  .card {
+    grid-column: span 12;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    box-shadow: var(--shadow);
+    padding: 11px 13px;
+    min-width: 0;
+    animation: rise 0.45s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .s3 { grid-column: span 3; }
+  .s4 { grid-column: span 4; }
+  .s8 { grid-column: span 8; }
+  .card h2 {
+    margin: 0 0 1px; font-size: 12px; font-weight: 600;
+    color: var(--ink-2); letter-spacing: 0.02em;
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .card-head .sub { font-size: 11px; color: var(--ink-3); }
+
+  /* Stat tiles */
+  .tile { display: flex; flex-direction: column; gap: 5px; }
+  .tile .label { font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+  .tile .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+  .tile .value { font-family: var(--font-mono); font-size: 21px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+  .tile .value small { font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+  .tile .ctx { font-size: 11px; color: var(--ink-3); }
+  .tile .ctx .num { font-size: 10.5px; }
+  .spark { flex: none; }
+  .spark polyline { fill: none; stroke: var(--series-1); stroke-width: 1.5; stroke-linejoin: round; }
+  .spark .fillpath { fill: var(--accent-weak); stroke: none; }
+
+  /* Charts */
+  .chart-wrap { position: relative; }
+  .chart-wrap svg { display: block; width: 100%; }
+  .axis-t { fill: var(--ink-3); font-family: var(--font-mono); font-size: 9.5px; }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .baseline { stroke: var(--grid); stroke-width: 1; }
+  .cross { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+  .endlab { font-family: var(--font-mono); font-size: 10px; font-weight: 600; fill: var(--ink-2);
+            paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+  .tooltip {
+    position: absolute; pointer-events: none; z-index: 10;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+    padding: 7px 9px; font-size: 11.5px; min-width: 108px;
+    opacity: 0; transition: opacity 0.12s;
+  }
+  .tooltip .tt-time { color: var(--ink-3); font-family: var(--font-mono); font-size: 10.5px; margin-bottom: 3px; }
+  .tooltip .tt-row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+  .tooltip .tt-row .num { font-weight: 600; }
+  .swatch { width: 8px; height: 8px; border-radius: 2.5px; flex: none; display: inline-block; }
+  .legend { display: flex; gap: 12px; align-items: center; font-size: 11px; color: var(--ink-2); }
+  .legend .item { display: inline-flex; align-items: center; gap: 5px; }
+  .legend .num { color: var(--ink); font-weight: 600; }
+
+  /* Horizontal bar lists (cores / disks) */
+  .bars { display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: grid; grid-template-columns: 46px 1fr 40px; align-items: center; gap: 8px; }
+  .bar-row .bl { font-size: 11px; color: var(--ink-2); font-family: var(--font-mono); }
+  .bar-row .bv { font-size: 11px; text-align: right; color: var(--ink-2); }
+  .track { display: block; height: 7px; border-radius: 3.5px; background: var(--surface-2); overflow: hidden; }
+  .fill { display: block; height: 100%; border-radius: 3.5px; background: var(--series-1); transition: width 0.5s ease; }
+  .fill.warn-f { background: var(--warn); }
+  .fill.crit-f { background: var(--crit); }
+
+  /* Memory stacked bar */
+  .stack { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 4px 0 8px; }
+  .stack .seg { height: 100%; }
+  .kv { display: flex; flex-direction: column; }
+  .kv .kv-row {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 0; border-top: 1px solid var(--line); font-size: 11.5px;
+  }
+  .kv .kv-row:first-child { border-top: none; }
+  .kv .k { color: var(--ink-2); flex: 1; }
+  .kv .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+  .kv .v small { color: var(--ink-3); }
+
+  /* Tables */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  th {
+    text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-3);
+    padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td.r, th.r { text-align: right; }
+  .proc-name { font-weight: 600; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .dim { color: var(--ink-3); }
+  .cpu-cell { display: inline-flex; align-items: center; gap: 7px; justify-content: flex-end; }
+  .cpu-cell .track { width: 46px; }
+
+  .foot-note {
+    grid-column: span 12; text-align: center;
+    color: var(--ink-3); font-size: 11px; padding-top: 2px;
+  }
+  .foot-note .num { font-size: 10.5px; }
+
+  /* ── Responsive ──────────────────── */
+  /* iPad landscape (>=1024px) keeps the full two-column layout */
+  @media (max-width: 900px) {
+    .s4, .s8 { grid-column: span 12; }
+    .topbar { padding: 8px 12px; }
+    .content { padding: 10px 12px 20px; }
+  }
+  @media (max-width: 700px) {
+    .s3 { grid-column: span 6; }
+  }
+  @media (max-width: 480px) {
+    .s3 { grid-column: span 12; }
+    .tb-meta, .brand-mini, .tb-sep { display: none; }
+  }
+</style>
+
+<header class="topbar">
+    <div class="tb-left">
+      <span class="brand-mini">
+        <svg width="24" height="24" viewBox="0 0 30 30" aria-hidden="true">
+          <rect x="1" y="1" width="28" height="28" rx="8" fill="var(--accent)" opacity="0.14"/>
+          <rect x="1" y="1" width="28" height="28" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.4"/>
+          <polyline points="6,17 11,17 13,10 17,21 19,14 24,14" fill="none"
+                    stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b>ServerTop</b>
+      </span>
+      <span class="tb-sep"></span>
+      <h1>tokyo-web-01</h1>
+      <span class="pill good"><span class="dot g"></span>Online</span>
+      <span class="tb-meta">Ubuntu 22.04 LTS · up <span class="num">42</span>d <span class="num">6</span>h</span>
+    </div>
+    <div class="tb-right">
+      <span class="chip" title="Data refresh interval (configured on the server)">Refresh <span class="num">2s</span></span>
+      <button class="icon-btn" id="theme-btn" title="Toggle light / dark theme" aria-label="Toggle theme">
+        <svg class="moon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="sun" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- Stat tiles -->
+    <section class="card s3 tile" style="--i:0">
+      <span class="label">CPU</span>
+      <div class="row">
+        <span class="value"><span id="t-cpu">32.4</span><small>%</small></span>
+        <svg class="spark" id="sp-cpu" width="64" height="26" aria-hidden="true"></svg>
+      </div>
+      <span class="ctx"><span class="num">8</span> cores · load <span class="num" id="t-load">1.24</span></span>
+    </section>
+
+    <section class="card s3 tile" style="--i:1">
+      <span class="label">Memory</span>
+      <div class="row">
+        <span class="value"><span id="t-mem">62.8</span><small>%</small></span>
+        <svg class="spark" id="sp-mem" width="64" height="26" aria-hidden="true"></svg>
+      </div>
+      <span class="ctx"><span class="num">10.1</span> / <span class="num">16</span> GB used</span>
+    </section>
+
+    <section class="card s3 tile" style="--i:2">
+      <span class="label">Disk /</span>
+      <div class="row">
+        <span class="value">70.9<small>%</small></span>
+        <svg class="spark" id="sp-disk" width="64" height="26" aria-hidden="true"></svg>
+      </div>
+      <span class="ctx"><span class="num">312</span> / <span class="num">440</span> GB used</span>
+    </section>
+
+    <section class="card s3 tile" style="--i:3">
+      <span class="label">Network</span>
+      <div class="row">
+        <span class="value" style="font-size:16px">↓<span id="t-rx">4.2</span><small>MB/s</small></span>
+        <svg class="spark" id="sp-net" width="64" height="26" aria-hidden="true"></svg>
+      </div>
+      <span class="ctx">up ↑ <span class="num" id="t-tx">1.1</span> MB/s · eth0</span>
+    </section>
+
+    <!-- CPU history -->
+    <section class="card s8" style="--i:4">
+      <div class="card-head">
+        <div>
+          <h2>CPU Usage</h2>
+          <span class="sub">Last 3 min · sampled every 2s</span>
+        </div>
+        <span class="legend"><span class="item"><span class="num" id="cpu-now">32.4%</span>&nbsp;now</span></span>
+      </div>
+      <div class="chart-wrap" id="cpu-chart" style="height:150px"></div>
+    </section>
+
+    <!-- Per-core -->
+    <section class="card s4" style="--i:5">
+      <div class="card-head">
+        <div>
+          <h2>CPU Cores</h2>
+          <span class="sub">Intel Xeon E5-2686 v4 · 8 cores</span>
+        </div>
+      </div>
+      <div class="bars" id="cores"></div>
+    </section>
+
+    <!-- Memory detail -->
+    <section class="card s4" style="--i:6">
+      <div class="card-head">
+        <div>
+          <h2>Memory</h2>
+          <span class="sub">16 GB total</span>
+        </div>
+      </div>
+      <div class="stack" aria-hidden="true">
+        <span class="seg" style="width:63%;background:var(--series-1)"></span>
+        <span class="seg" style="width:19%;background:var(--series-1-soft)"></span>
+        <span class="seg" style="width:18%;background:var(--surface-2)"></span>
+      </div>
+      <div class="kv">
+        <div class="kv-row"><span class="swatch" style="background:var(--series-1)"></span><span class="k">Used</span><span class="v">10.1 GB <small>· 63%</small></span></div>
+        <div class="kv-row"><span class="swatch" style="background:var(--series-1-soft)"></span><span class="k">Cache / buffer</span><span class="v">3.0 GB <small>· 19%</small></span></div>
+        <div class="kv-row"><span class="swatch" style="background:var(--surface-2);border:1px solid var(--line)"></span><span class="k">Free</span><span class="v">2.9 GB <small>· 18%</small></span></div>
+        <div class="kv-row"><span class="swatch" style="background:transparent"></span><span class="k">Swap</span><span class="v">0.3 / 2.0 GB <small>· 15%</small></span></div>
+      </div>
+    </section>
+
+    <!-- Network traffic -->
+    <section class="card s8" style="--i:7">
+      <div class="card-head">
+        <div>
+          <h2>Network · eth0</h2>
+          <span class="sub">Last 3 min</span>
+        </div>
+        <span class="legend">
+          <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Down <span class="num" id="leg-rx">4.2 MB/s</span></span>
+          <span class="item"><span class="swatch" style="background:var(--series-2)"></span>Up <span class="num" id="leg-tx">1.1 MB/s</span></span>
+        </span>
+      </div>
+      <div class="chart-wrap" id="net-chart" style="height:150px"></div>
+    </section>
+
+    <!-- Disk partitions -->
+    <section class="card s4" style="--i:8">
+      <div class="card-head">
+        <div>
+          <h2>Disk Partitions</h2>
+          <span class="sub">4 mount points</span>
+        </div>
+      </div>
+      <div class="bars" style="gap:10px">
+        <div class="bar-row">
+          <span class="bl">/</span>
+          <span class="track"><span class="fill" style="width:70.9%"></span></span>
+          <span class="bv num">70.9%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bl">/home</span>
+          <span class="track"><span class="fill" style="width:44%"></span></span>
+          <span class="bv num">44.0%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bl">/var</span>
+          <span class="track"><span class="fill warn-f" style="width:91%"></span></span>
+          <span class="bv num">91.0%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bl">/boot</span>
+          <span class="track"><span class="fill" style="width:23%"></span></span>
+          <span class="bv num">23.0%</span>
+        </div>
+      </div>
+      <div class="kv" style="margin-top:8px">
+        <div class="kv-row"><span class="dot y"></span><span class="k">/var usage over 85%</span><span class="v dim">Warning</span></div>
+      </div>
+    </section>
+
+    <!-- Processes -->
+    <section class="card s8" style="--i:9">
+      <div class="card-head">
+        <div>
+          <h2>Processes</h2>
+          <span class="sub">Top 8 by <span id="proc-key">CPU</span></span>
+        </div>
+        <button class="chip" id="proc-sort" title="Toggle sort: CPU / memory">CPU ▾</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>PID</th><th>Name</th><th>User</th><th class="r">CPU</th><th class="r">Mem</th></tr>
+          </thead>
+          <tbody id="proc-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Docker -->
+    <section class="card s8" style="--i:10">
+      <div class="card-head">
+        <div>
+          <h2>Docker Containers</h2>
+          <span class="sub">5 containers · 4 running</span>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Image</th><th>Status</th><th class="r">CPU</th><th class="r">Mem</th><th class="r">Uptime</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="proc-name">app-web</td><td class="mono dim">app:1.8.2</td><td><span class="pill good"><span class="dot g"></span>Running</span></td><td class="r mono">14.2%</td><td class="r mono">780 MB</td><td class="r mono dim">12d</td></tr>
+            <tr><td class="proc-name">nginx-proxy</td><td class="mono dim">nginx:1.27</td><td><span class="pill good"><span class="dot g"></span>Running</span></td><td class="r mono">2.1%</td><td class="r mono">48 MB</td><td class="r mono dim">42d</td></tr>
+            <tr><td class="proc-name">postgres</td><td class="mono dim">postgres:16</td><td><span class="pill good"><span class="dot g"></span>Running</span></td><td class="r mono">9.8%</td><td class="r mono">1.2 GB</td><td class="r mono dim">42d</td></tr>
+            <tr><td class="proc-name">redis</td><td class="mono dim">redis:7</td><td><span class="pill good"><span class="dot g"></span>Running</span></td><td class="r mono">1.3%</td><td class="r mono">96 MB</td><td class="r mono dim">42d</td></tr>
+            <tr><td class="proc-name">backup-cron</td><td class="mono dim">backup:0.4</td><td><span class="pill crit-t"><span class="dot r"></span>Exited</span></td><td class="r mono dim">—</td><td class="r mono dim">—</td><td class="r mono dim">3h ago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- System info -->
+    <section class="card s4" style="--i:11">
+      <div class="card-head">
+        <div>
+          <h2>System</h2>
+        </div>
+      </div>
+      <div class="kv">
+        <div class="kv-row"><span class="k">Hostname</span><span class="v">tokyo-web-01</span></div>
+        <div class="kv-row"><span class="k">OS</span><span class="v">Ubuntu 22.04.4 LTS</span></div>
+        <div class="kv-row"><span class="k">Kernel</span><span class="v">5.15.0-105-generic</span></div>
+        <div class="kv-row"><span class="k">CPU</span><span class="v" style="font-size:10.5px">Xeon E5-2686 v4 ×8</span></div>
+        <div class="kv-row"><span class="k">Memory</span><span class="v">16 GB</span></div>
+        <div class="kv-row"><span class="k">Public IP</span><span class="v">203.0.113.10</span></div>
+        <div class="kv-row"><span class="k">Agent</span><span class="v">ServerTop v0.1.0</span></div>
+      </div>
+    </section>
+
+    <p class="foot-note">Simulated data · UI preview · Production build: <span class="num">React + Tailwind + Express</span>, metrics pushed every <span class="num">2s</span> over WebSocket</p>
+  </main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Theme toggle ────────────────── */
+  var root = document.documentElement;
+  document.getElementById("theme-btn").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme", dark ? "light" : "dark");
+  });
+
+  /* ── Mock data ───────────────────── */
+  var N = 90, STEP = 2000;                    // 3 min @ 2s
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function walk(n, start, min, max, step) {
+    var arr = [], v = start;
+    for (var i = 0; i < n; i++) { v = clamp(v + (Math.random() - 0.5) * step, min, max); arr.push(v); }
+    return arr;
+  }
+  var cpu = walk(N, 32, 6, 96, 7);
+  var mem = walk(N, 62.8, 55, 72, 1.2);
+  var rx = walk(N, 4.2, 0.3, 11, 1.4);
+  var tx = walk(N, 1.1, 0.1, 5, 0.6);
+  var cores = [41, 28, 35, 22, 61, 18, 44, 30];
+
+  function fmtT(ms) {
+    var d = new Date(ms);
+    return String(d.getHours()).padStart(2, "0") + ":" +
+           String(d.getMinutes()).padStart(2, "0") + ":" +
+           String(d.getSeconds()).padStart(2, "0");
+  }
+
+  /* ── Generic time-series chart ────
+     series: [{data, color, name, area}], yMax, yTicks, yLab, fmt, endFmt */
+  var uid = 0;
+  function makeChart(el, opts) {
+    var tip = document.createElement("div");
+    tip.className = "tooltip";
+    el.appendChild(tip);
+    var gid = "g" + (++uid);
+
+    function render() {
+      var W = el.clientWidth, H = el.clientHeight;
+      if (W < 40) return;
+      var m = { t: 10, r: 40, b: 18, l: 6 };
+      var iw = W - m.l - m.r, ih = H - m.t - m.b;
+      var yMax = opts.yMax;
+      var x = function (i) { return m.l + iw * i / (N - 1); };
+      var y = function (v) { return m.t + ih * (1 - v / yMax); };
+
+      var s = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">';
+      s += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+           '<stop offset="0" style="stop-color:' + opts.series[0].color + '" stop-opacity="0.20"/>' +
+           '<stop offset="1" style="stop-color:' + opts.series[0].color + '" stop-opacity="0.02"/>' +
+           "</linearGradient></defs>";
+
+      // gridlines + y labels (right)
+      var ticks = opts.yTicks;
+      for (var t = 0; t < ticks.length; t++) {
+        var ty = y(ticks[t]);
+        s += '<line class="' + (ticks[t] === 0 ? "baseline" : "gridline") + '" x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + ty + '" y2="' + ty + '"/>';
+        s += '<text class="axis-t" x="' + (m.l + iw + 6) + '" y="' + (ty + 3.5) + '">' + opts.yLab(ticks[t]) + "</text>";
+      }
+      // x time labels
+      var now = Date.now();
+      for (var k = 0; k <= 3; k++) {
+        var idx = Math.round((N - 1) * k / 3);
+        var lab = fmtT(now - (N - 1 - idx) * STEP);
+        var anchor = k === 0 ? "start" : (k === 3 ? "end" : "middle");
+        s += '<text class="axis-t" text-anchor="' + anchor + '" x="' + x(idx) + '" y="' + (H - 4) + '">' + lab + "</text>";
+      }
+
+      // series
+      for (var si = 0; si < opts.series.length; si++) {
+        var sr = opts.series[si], d = "";
+        for (var i = 0; i < N; i++) d += (i ? "L" : "M") + x(i).toFixed(1) + " " + y(sr.data[i]).toFixed(1);
+        if (sr.area) {
+          s += '<path d="' + d + "L" + x(N - 1).toFixed(1) + " " + y(0) + "L" + x(0) + " " + y(0) + 'Z" fill="url(#' + gid + ')"/>';
+        }
+        s += '<path d="' + d + '" fill="none" stroke="' + sr.color + '" stroke-width="2" stroke-linejoin="round"/>';
+        var lx = x(N - 1), ly = y(sr.data[N - 1]);
+        s += '<circle cx="' + lx + '" cy="' + ly + '" r="3" fill="' + sr.color + '" stroke="var(--surface)" stroke-width="1.5"/>';
+        s += '<text class="endlab" text-anchor="end" x="' + (lx - 8) + '" y="' + (ly - 6) + '">' + (opts.endFmt || opts.fmt)(sr.data[N - 1]) + "</text>";
+      }
+
+      // crosshair + hover dots + hit area
+      s += '<line class="cross" id="' + gid + '-x" y1="' + m.t + '" y2="' + (m.t + ih) + '" x1="0" x2="0"/>';
+      for (var sj = 0; sj < opts.series.length; sj++) {
+        s += '<circle id="' + gid + "-d" + sj + '" r="3.5" fill="' + opts.series[sj].color + '" stroke="var(--surface)" stroke-width="1.5" opacity="0"/>';
+      }
+      s += '<rect id="' + gid + '-hit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>';
+      s += "</svg>";
+
+      var old = el.querySelector("svg");
+      if (old) old.remove();
+      tip.insertAdjacentHTML("beforebegin", s);
+
+      var svg = el.querySelector("svg");
+      var hit = svg.querySelector("#" + gid + "-hit");
+      var crossEl = svg.querySelector("#" + gid + "-x");
+      hit.addEventListener("mousemove", function (e) {
+        var r = svg.getBoundingClientRect();
+        var px = e.clientX - r.left;
+        var i = clamp(Math.round((px - m.l) / iw * (N - 1)), 0, N - 1);
+        var cx = x(i);
+        crossEl.setAttribute("x1", cx); crossEl.setAttribute("x2", cx);
+        crossEl.style.opacity = 1;
+        var rows = '<div class="tt-time">' + fmtT(now - (N - 1 - i) * STEP) + "</div>";
+        for (var sj = 0; sj < opts.series.length; sj++) {
+          var dEl = svg.querySelector("#" + gid + "-d" + sj);
+          dEl.setAttribute("cx", cx); dEl.setAttribute("cy", y(opts.series[sj].data[i]));
+          dEl.style.opacity = 1;
+          rows += '<div class="tt-row"><span><span class="swatch" style="background:' + opts.series[sj].color + '"></span> ' +
+                  opts.series[sj].name + '</span><span class="num">' + opts.fmt(opts.series[sj].data[i]) + "</span></div>";
+        }
+        tip.innerHTML = rows;
+        tip.style.opacity = 1;
+        var tw = tip.offsetWidth;
+        tip.style.left = clamp(cx + 12, 4, W - tw - 4) + (cx + 12 + tw > W - 4 ? -tw - 24 : 0) + "px";
+        tip.style.top = (m.t + 4) + "px";
+      });
+      hit.addEventListener("mouseleave", function () {
+        tip.style.opacity = 0; crossEl.style.opacity = 0;
+        for (var sj = 0; sj < opts.series.length; sj++)
+          svg.querySelector("#" + gid + "-d" + sj).style.opacity = 0;
+      });
+    }
+    render();
+    new ResizeObserver(render).observe(el);
+    return { render: render };
+  }
+
+  var cpuChart = makeChart(document.getElementById("cpu-chart"), {
+    yMax: 100, yTicks: [0, 25, 50, 75, 100],
+    yLab: function (v) { return v + "%"; },
+    fmt: function (v) { return v.toFixed(1) + "%"; },
+    series: [{ data: cpu, color: "var(--series-1)", name: "CPU", area: true }]
+  });
+  var netChart = makeChart(document.getElementById("net-chart"), {
+    yMax: 12, yTicks: [0, 4, 8, 12],
+    yLab: function (v) { return v + "M"; },
+    fmt: function (v) { return v.toFixed(1) + " MB/s"; },
+    endFmt: function (v) { return v.toFixed(1) + "M"; },
+    series: [
+      { data: rx, color: "var(--series-1)", name: "Down", area: true },
+      { data: tx, color: "var(--series-2)", name: "Up", area: false }
+    ]
+  });
+
+  /* ── Sparklines ──────────────────── */
+  function spark(id, data) {
+    var el = document.getElementById(id);
+    var w = 64, h = 26, pts = data.slice(-30), pl = "";
+    var lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts);
+    var pad = (hi - lo) * 0.15 + 0.001; lo -= pad; hi += pad;
+    for (var i = 0; i < pts.length; i++)
+      pl += (w * i / (pts.length - 1)).toFixed(1) + "," + (2 + (h - 4) * (1 - (pts[i] - lo) / (hi - lo))).toFixed(1) + " ";
+    el.innerHTML = '<polygon class="fillpath" points="0,' + h + " " + pl + w + "," + h + '"/>' +
+                   '<polyline points="' + pl.trim() + '"/>';
+  }
+
+  /* ── Process table (sortable) ────── */
+  var PROCS = [
+    { pid: 1874, name: "node", user: "app", cpu: 18.4, mem: 812 },
+    { pid: 1102, name: "postgres", user: "postgres", cpu: 12.1, mem: 1434 },
+    { pid: 981, name: "redis-server", user: "redis", cpu: 4.3, mem: 210 },
+    { pid: 743, name: "nginx", user: "www-data", cpu: 3.2, mem: 64 },
+    { pid: 655, name: "dockerd", user: "root", cpu: 2.6, mem: 148 },
+    { pid: 2201, name: "servertop", user: "app", cpu: 1.4, mem: 58 },
+    { pid: 412, name: "systemd-journald", user: "root", cpu: 0.8, mem: 32 },
+    { pid: 890, name: "sshd", user: "root", cpu: 0.2, mem: 12 }
+  ];
+  var sortKey = "cpu";
+  function fmtMem(mb) { return mb >= 1024 ? (mb / 1024).toFixed(1) + " GB" : mb + " MB"; }
+  function renderProcs() {
+    var rows = PROCS.slice().sort(function (a, b) { return b[sortKey] - a[sortKey]; });
+    var html = "";
+    for (var i = 0; i < rows.length; i++) {
+      var p = rows[i];
+      html += '<tr><td class="mono dim">' + p.pid + '</td><td class="proc-name">' + p.name +
+              '</td><td class="dim">' + p.user + '</td><td class="r"><span class="cpu-cell">' +
+              '<span class="track"><span class="fill" style="width:' + Math.min(100, p.cpu * 2).toFixed(0) + '%"></span></span>' +
+              '<span class="mono">' + p.cpu.toFixed(1) + '%</span></span></td>' +
+              '<td class="r mono">' + fmtMem(p.mem) + "</td></tr>";
+    }
+    document.getElementById("proc-body").innerHTML = html;
+  }
+  document.getElementById("proc-sort").addEventListener("click", function () {
+    sortKey = sortKey === "cpu" ? "mem" : "cpu";
+    var label = sortKey === "cpu" ? "CPU" : "Mem";
+    this.textContent = label + " ▾";
+    document.getElementById("proc-key").textContent = label.toLowerCase() === "mem" ? "memory" : "CPU";
+    renderProcs();
+  });
+
+  /* ── Per-core bars ───────────────── */
+  var coresEl = document.getElementById("cores");
+  function renderCores() {
+    var html = "";
+    for (var i = 0; i < cores.length; i++) {
+      var v = cores[i].toFixed(0);
+      html += '<div class="bar-row"><span class="bl">Core ' + i + '</span>' +
+              '<span class="track"><span class="fill" style="width:' + v + '%"></span></span>' +
+              '<span class="bv num">' + v + "%</span></div>";
+    }
+    coresEl.innerHTML = html;
+  }
+
+  /* ── Live refresh (simulated push) ── */
+  function push(arr, min, max, step) {
+    arr.push(clamp(arr[arr.length - 1] + (Math.random() - 0.5) * step, min, max));
+    arr.shift();
+  }
+  function txt(id, v) { document.getElementById(id).textContent = v; }
+
+  function tick() {
+    push(cpu, 6, 96, 8); push(mem, 55, 72, 1.2);
+    push(rx, 0.3, 11, 1.6); push(tx, 0.1, 5, 0.7);
+    for (var i = 0; i < cores.length; i++) cores[i] = clamp(cores[i] + (Math.random() - 0.5) * 9, 3, 98);
+
+    var c = cpu[N - 1], r = rx[N - 1], t = tx[N - 1];
+    txt("t-cpu", c.toFixed(1)); txt("cpu-now", c.toFixed(1) + "%");
+    txt("t-load", (c / 26).toFixed(2));
+    txt("t-mem", mem[N - 1].toFixed(1));
+    txt("t-rx", r.toFixed(1)); txt("t-tx", t.toFixed(1));
+    txt("leg-rx", r.toFixed(1) + " MB/s"); txt("leg-tx", t.toFixed(1) + " MB/s");
+
+    cpuChart.render(); netChart.render(); renderCores();
+    spark("sp-cpu", cpu); spark("sp-mem", mem);
+    spark("sp-net", rx);
+  }
+
+  renderCores(); renderProcs();
+  spark("sp-cpu", cpu); spark("sp-mem", mem);
+  spark("sp-disk", walk(30, 70, 66, 74, 0.6)); spark("sp-net", rx);
+
+  setInterval(function () { if (!document.hidden) tick(); }, STEP);
+})();
+</script>
+
+</body>
+</html>
