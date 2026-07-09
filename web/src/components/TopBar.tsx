@@ -1,4 +1,5 @@
 import type { MetricsSnapshot, SystemInfo } from '../../../shared/types';
+import { fullscreenSupported, useFullscreen } from '../hooks/useFullscreen';
 import type { ConnStatus } from '../hooks/useLive';
 import { IS_DEMO } from '../lib/demo';
 import { fmtUptime } from '../lib/format';
@@ -26,6 +27,7 @@ export function TopBar({
   onLogout: (() => void) | null;
 }) {
   const s = STATUS[status];
+  const fs = useFullscreen();
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line px-4 py-2 backdrop-blur-md [background:color-mix(in_srgb,var(--page)_82%,transparent)]">
       <div className="flex min-w-0 flex-wrap items-center gap-2.5">
@@ -72,6 +74,36 @@ export function TopBar({
           Refresh{' '}
           <span className="num text-ink">{((system?.sampleIntervalMs ?? 2000) / 1000).toFixed(0)}s</span>
         </span>
+        {fullscreenSupported && (
+          <button
+            onClick={fs.toggle}
+            className="grid size-7 cursor-pointer place-items-center rounded-[7px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink"
+            title={fs.active ? 'Exit fullscreen' : 'Fullscreen'}
+            aria-label={fs.active ? 'Exit fullscreen' : 'Enter fullscreen'}
+          >
+            {fs.active ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
+        )}
         <button
           onClick={onToggleTheme}
           className="grid size-7 cursor-pointer place-items-center rounded-[7px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink"
