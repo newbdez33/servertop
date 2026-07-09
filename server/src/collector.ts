@@ -43,11 +43,25 @@ export function mapDisks(
     entries = entries.filter(d => {
       if (d.mount === '/') return true;
       if (d.size < 2 * 1024 ** 3) return false;
-      // macOS (dev machine) system snapshot noise
+      // macOS (dev machine) noise: system snapshots, simulator images, swap
       if (d.mount.startsWith('/System/Volumes/') && d.mount !== '/System/Volumes/Data') return false;
+      if (d.mount.startsWith('/Library/Developer/')) return false;
       if (d.mount.startsWith('/private/var/vm')) return false;
       return true;
     });
+
+    if (process.platform === 'darwin') {
+      // macOS: '/' is a sealed ~12 GB system snapshot; the writable Data
+      // volume sharing the same APFS container is what Finder reports as
+      // "the disk" — present it as '/'
+      const data = entries.find(d => d.mount === '/System/Volumes/Data');
+      if (data) {
+        entries = entries.filter(
+          d => d.mount !== '/' && d.mount !== '/System/Volumes/Data',
+        );
+        entries.unshift({ ...data, mount: '/' });
+      }
+    }
   }
 
   // De-duplicate by device, keeping the shortest mount path

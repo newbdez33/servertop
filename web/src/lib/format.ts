@@ -16,6 +16,11 @@ export function fmtGB(b: number, digits = 0): string {
   return (b / GB).toFixed(digits);
 }
 
+/** Disk sizes use decimal GB to match Finder / vendor labels */
+export function fmtGBdec(b: number, digits = 0): string {
+  return (b / 1e9).toFixed(digits);
+}
+
 /** Network rate: bytes/s → human string ("4.2 MB/s") */
 export function fmtRate(bps: number): string {
   if (!Number.isFinite(bps) || bps < 0) return '—';

@@ -7,7 +7,7 @@ import type {
   SystemInfo,
 } from '../../../shared/types';
 import { HISTORY_LEN } from '../hooks/useLive';
-import { fmtAgo, fmtBytes, fmtGB, fmtRate, fmtUptime, niceMax, toMBs } from '../lib/format';
+import { fmtAgo, fmtBytes, fmtGB, fmtGBdec, fmtRate, fmtUptime, niceMax, toMBs } from '../lib/format';
 import {
   ActivityIcon,
   BoxIcon,
@@ -93,8 +93,8 @@ export function StatTiles({
         ctx={
           rootDisk ? (
             <>
-              <span className="num">{fmtGB(rootDisk.used)}</span> /{' '}
-              <span className="num">{fmtGB(rootDisk.size)}</span> GB used
+              <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
+              <span className="num">{fmtGBdec(rootDisk.size)}</span> GB used
             </>
           ) : (
             'no data'
