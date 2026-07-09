@@ -4,8 +4,8 @@
 > 将本机运行状态发布为 Web 页面，可从任意远端浏览器打开、实时监视。
 > UI 风格参考 [ServerCat](https://servercat.app/)。
 
-- **版本**: v0.1（设计稿）
-- **日期**: 2026-07-08
+- **版本**: v0.2（M1 已实现并发布：https://github.com/newbdez33/servertop ）
+- **日期**: 2026-07-08 创建 · 2026-07-09 更新（新增分离模式部署，见 §6.5）
 - **技术栈**: Node.js / Express（后端） · React + Tailwind CSS（前端） · WebSocket（实时推送）
 
 ---
@@ -249,7 +249,44 @@ services:
 | CPU 温度 | sysfs | 挂载 `/sys:ro` |
 | 主机名 / OS | UTS namespace / 容器 rootfs | 挂载宿主 `/etc/os-release`；主机名经 env 或 `/host/etc/hostname` 读取 |
 
-### 6.4 运行与升级
+### 6.4 分离模式：GitHub Pages 前端 + HTTPS 后端（Caddy DNS-01）
+
+Pages 页面是 HTTPS，浏览器混合内容策略要求后端也必须是 HTTPS。部署入口：
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+```
+
+```
+浏览器 ── HTTPS ──▶ GitHub Pages（gh-pages 分支，静态前端）
+   │
+   └── HTTPS/WSS ──▶ https://monitor.example.com（Caddy :443，DNS-01 签发证书）
+                        └─▶ 127.0.0.1:3000（ServerTop 容器，host network）
+```
+
+**服务端**（`docker-compose.https.yml` + `deploy/caddy/`）：
+
+- `ALLOWED_ORIGIN` 环境变量定义 CORS 白名单（逗号分隔）；未设置 = 仅同源。
+  预检（OPTIONS）返回 204，命中白名单才回 `Access-Control-Allow-Origin` + `Vary: Origin`
+- WS 升级校验 `Origin`：同主机或白名单内放行，否则 403（token 校验 401 在其后）
+- `trust proxy: loopback`：仅信任本机 Caddy 的 `X-Forwarded-For`，登录限速按真实客户端 IP 计
+- Caddy 镜像用 xcaddy 编译进 DNS 插件（构建参数 `DNS_PLUGIN`，默认 cloudflare）；
+  `auto_https disable_redirects` 不占用宿主 :80（DNS-01 无需入站 HTTP），**:443 需空闲**；
+  服务器保持内网，零公网暴露
+
+**客户端**：
+
+- 探测不到同源后端时，连接页出现 Server URL 输入框；地址存 localStorage
+  （客户端连接配置，不属于服务端配置面）
+- **Token 与签发服务器绑定**：切换服务器地址即清除本地 JWT，防止 token 泄露给新地址
+- 远程会话顶栏始终有 Disconnect 按钮（含对端关闭认证的情况），可随时换服务器
+- 在线演示为运行时参数 `?demo`（模拟数据，无后端）
+
+**Pages 发布**：当前为手动构建（`VITE_BASE=/servertop/`）推送 `gh-pages` 分支；
+`.github/pages.yml.disabled` 是备好的 Actions 自动部署工作流，待 gh token 补
+`workflow` scope 后启用并把 Pages 切回 workflow 模式。
+
+### 6.5 运行与升级
 
 ```bash
 docker compose up -d --build      # 首次部署 / 本地构建升级
