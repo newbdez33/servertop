@@ -1,5 +1,6 @@
 import type { MetricsSnapshot, SystemInfo } from '../../../shared/types';
 import type { ConnStatus } from '../hooks/useLive';
+import { IS_DEMO } from '../lib/demo';
 import { fmtUptime } from '../lib/format';
 import { Pill, type Tone } from './ui';
 
@@ -55,6 +56,7 @@ export function TopBar({
         </span>
         <h1 className="m-0 text-[15px] font-semibold">{system?.hostname ?? '…'}</h1>
         <Pill tone={s.tone}>{s.label}</Pill>
+        {IS_DEMO && <Pill tone="muted">Demo · simulated data</Pill>}
         {system && snapshot && (
           <span className="text-[11.5px] text-ink-3 max-[560px]:hidden">
             {system.os} · up <span className="num">{fmtUptime(snapshot.uptimeSec)}</span>

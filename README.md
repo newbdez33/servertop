@@ -2,6 +2,8 @@
 
 A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docker container on the server you want to watch, then open the dashboard from any browser — metrics stream in every 2 seconds over WebSocket.
 
+**[Live demo →](https://newbdez33.github.io/servertop/)** *(simulated data)*
+
 ![Dashboard (dark)](docs/screenshots/dashboard-dark.png)
 
 <details>

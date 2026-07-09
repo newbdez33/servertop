@@ -8,6 +8,7 @@ import type {
   WsMessage,
 } from '../../../shared/types';
 import { api, ApiError, wsUrl } from '../lib/api';
+import { createDemo, IS_DEMO } from '../lib/demo';
 
 /** Points kept client-side; the visible window is HISTORY_LEN × sampleInterval. */
 export const HISTORY_LEN = 90;
@@ -40,6 +41,39 @@ export function useLive(onAuthFailed: () => void): LiveState {
   onAuthFailedRef.current = onAuthFailed;
 
   useEffect(() => {
+    // Demo build (GitHub Pages): drive the exact same UI from a simulator
+    if (IS_DEMO) {
+      const demo = createDemo();
+      setSystem(demo.system);
+      setHistory(demo.seedHistory());
+      setProcesses(demo.processes());
+      setContainers(demo.containers());
+      setStatus('online');
+      const applyTick = (): void => {
+        const m = demo.tick();
+        setSnapshot(m);
+        setHistory(h =>
+          [...h, {
+            ts: m.ts,
+            cpu: m.cpu.usage,
+            mem: (m.mem.used / m.mem.total) * 100,
+            rx: m.net[0].rxSec,
+            tx: m.net[0].txSec,
+          }].slice(-HISTORY_LEN),
+        );
+      };
+      applyTick();
+      const fast = setInterval(applyTick, demo.system.sampleIntervalMs);
+      const medium = setInterval(() => {
+        setProcesses(demo.processes());
+        setContainers(demo.containers());
+      }, 5000);
+      return () => {
+        clearInterval(fast);
+        clearInterval(medium);
+      };
+    }
+
     let disposed = false;
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;

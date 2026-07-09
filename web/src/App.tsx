@@ -3,6 +3,7 @@ import { Dashboard } from './Dashboard';
 import { useTheme } from './hooks/useTheme';
 import { Login } from './Login';
 import { api, clearToken, getToken } from './lib/api';
+import { IS_DEMO } from './lib/demo';
 
 export default function App() {
   const theme = useTheme();
@@ -10,6 +11,10 @@ export default function App() {
   const [hasToken, setHasToken] = useState<boolean>(() => Boolean(getToken()));
 
   useEffect(() => {
+    if (IS_DEMO) {
+      setAuthRequired(false);
+      return;
+    }
     api<{ required: boolean }>('/auth/status')
       .then(r => setAuthRequired(r.required))
       .catch(() => setAuthRequired(true));
