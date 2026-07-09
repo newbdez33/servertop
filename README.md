@@ -2,8 +2,6 @@
 
 A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docker container on the server you want to watch, then open the dashboard from any browser — metrics stream in every 2 seconds over WebSocket.
 
-Inspired by [ServerCat](https://servercat.app/)'s clean dashboard aesthetic, built as a web app.
-
 ![Dashboard (dark)](docs/screenshots/dashboard-dark.png)
 
 <details>
