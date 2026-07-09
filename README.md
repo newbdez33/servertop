@@ -25,6 +25,10 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Token auth** — single access token → 24h JWT, login rate-limited
 - **Read-only by design** — zero configuration surface in the web UI; everything is configured server-side via environment variables
 - Light / dark theme, compact layout tuned for iPad landscape, English UI
+- **Fullscreen & installable** — fullscreen toggle in the top bar; PWA manifest, so
+  on iPad you can Share → *Add to Home Screen* for a chromeless standalone app
+- **Self-updating pages** — open dashboards detect new deploys (5-min check +
+  on wake) and reload themselves
 - No database — history lives in a 1-hour in-memory ring buffer
 
 ## Quick start (Docker)

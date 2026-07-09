@@ -29,7 +29,7 @@ export function TopBar({
   const s = STATUS[status];
   const fs = useFullscreen();
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line px-4 py-2 backdrop-blur-md [background:color-mix(in_srgb,var(--page)_82%,transparent)]">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line px-4 pb-2 backdrop-blur-md [background:color-mix(in_srgb,var(--page)_82%,transparent)] [padding-top:max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex min-w-0 flex-wrap items-center gap-2.5">
         <span className="flex items-center gap-2 max-[480px]:hidden">
           <svg width="24" height="24" viewBox="0 0 30 30" aria-hidden="true">
