@@ -41,7 +41,28 @@ async function main(): Promise<void> {
 
   const app = express();
   app.disable('x-powered-by');
+  // The HTTPS overlay proxies from local Caddy — trust X-Forwarded-For from
+  // loopback only, so the login rate limiter keys on the real client IP
+  // (never `true`: that would let clients spoof their IP)
+  app.set('trust proxy', 'loopback');
   app.use(express.json({ limit: '10kb' }));
+
+  // CORS for a separately hosted frontend (ALLOWED_ORIGIN env); off by default
+  app.use('/api', (req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && config.allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.setHeader('Access-Control-Max-Age', '86400');
+    }
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
   app.use('/api', createRouter(collector, history));
 
   if (webDist) {
@@ -75,9 +96,26 @@ async function main(): Promise<void> {
   const clients = new Set<WebSocket>();
   const alive = new WeakMap<WebSocket, boolean>();
 
+  // Browser WS is not CORS-enforced — check Origin ourselves: same-host or allow-listed
+  const wsOriginAllowed = (req: http.IncomingMessage): boolean => {
+    const origin = req.headers.origin;
+    if (!origin) return true; // non-browser clients
+    try {
+      if (new URL(origin).host === req.headers.host) return true;
+    } catch {
+      return false;
+    }
+    return config.allowedOrigins.includes(origin.replace(/\/+$/, ''));
+  };
+
   server.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
     if (url.pathname !== '/ws') {
+      socket.destroy();
+      return;
+    }
+    if (!wsOriginAllowed(req)) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
     }

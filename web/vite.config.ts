@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // Demo build is served from https://<user>.github.io/servertop/
-  base: process.env.VITE_DEMO === '1' ? '/servertop/' : '/',
+  // GitHub Pages serves from https://<user>.github.io/servertop/ — build with VITE_BASE=/servertop/
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {

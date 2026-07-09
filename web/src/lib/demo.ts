@@ -6,8 +6,12 @@ import type {
   SystemInfo,
 } from '../../../shared/types';
 
-/** Build-time flag — set VITE_DEMO=1 to ship the simulated-data demo (GitHub Pages). */
-export const IS_DEMO = import.meta.env.VITE_DEMO === '1';
+/**
+ * Demo mode: simulated data, no backend. Activated at runtime with ?demo
+ * (e.g. the GitHub Pages link) or at build time with VITE_DEMO=1.
+ */
+export const IS_DEMO =
+  import.meta.env.VITE_DEMO === '1' || new URLSearchParams(window.location.search).has('demo');
 
 const GB = 1024 ** 3;
 const MB = 1024 ** 2;

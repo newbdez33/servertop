@@ -20,6 +20,11 @@ export const config = {
   jwtTtlSec: 24 * 3600,
   sampleIntervalMs: intEnv(env.SAMPLE_INTERVAL, 2000),
   historyWindowSec: intEnv(env.HISTORY_WINDOW, 3600),
+  /** Origins allowed for cross-origin API access (e.g. a GitHub Pages frontend). Empty = same-origin only. */
+  allowedOrigins: (env.ALLOWED_ORIGIN ?? '')
+    .split(',')
+    .map(s => s.trim().replace(/\/+$/, ''))
+    .filter(Boolean),
   hostRoot,
   agentVersion: '0.1.0',
 } as const;

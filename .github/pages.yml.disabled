@@ -35,7 +35,7 @@ jobs:
       - run: npm ci
       - run: npm run build --workspace web
         env:
-          VITE_DEMO: '1'
+          VITE_BASE: /servertop/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

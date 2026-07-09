@@ -103,8 +103,8 @@ export function TopBar({
           <button
             onClick={onLogout}
             className="grid size-7 cursor-pointer place-items-center rounded-[7px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink"
-            title="Sign out"
-            aria-label="Sign out"
+            title="Disconnect / sign out"
+            aria-label="Disconnect"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path

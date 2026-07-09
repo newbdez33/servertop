@@ -1,0 +1,33 @@
+# HTTPS overlay — for using the GitHub Pages-hosted frontend (or any
+# separately hosted frontend) against this server:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+#
+# Prereqs: a domain whose DNS you control (DNS-01 needs an API token; the
+# server itself stays intranet-only, no inbound ports required) and an
+# A record pointing SERVERTOP_DOMAIN at this server's intranet IP.
+services:
+  servertop:
+    environment:
+      # Frontend origin(s) allowed for cross-origin API access (comma-separated)
+      - ALLOWED_ORIGIN=https://newbdez33.github.io
+
+  caddy:
+    build:
+      context: ./deploy/caddy
+      args:
+        DNS_PLUGIN: cloudflare # your DNS provider module, see deploy/caddy/Caddyfile
+    container_name: servertop-caddy
+    restart: unless-stopped
+    network_mode: host # binds :443 and reaches servertop on 127.0.0.1:3000
+    environment:
+      - SERVERTOP_DOMAIN=monitor.example.com # REQUIRED: your domain
+      - DNS_API_TOKEN=change-me # REQUIRED: DNS provider API token
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:

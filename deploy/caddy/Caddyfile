@@ -1,0 +1,22 @@
+# TLS termination for ServerTop via Let's Encrypt DNS-01.
+# WebSocket (/ws) is proxied automatically.
+#
+# The `dns cloudflare` line matches the default DNS_PLUGIN build arg.
+# For another provider, change both the build arg (docker-compose.https.yml)
+# and this line — syntax per provider: https://github.com/caddy-dns
+#   dns alidns {$DNS_API_TOKEN}          # token = access_key_id,access_key_secret
+#   dns dnspod {$DNS_API_TOKEN}
+#   dns route53                          # uses AWS_* env vars
+
+# No :80 redirect listener — the host may already run a web server there,
+# and DNS-01 needs no inbound HTTP anyway. Caddy still needs :443 free.
+{
+	auto_https disable_redirects
+}
+
+{$SERVERTOP_DOMAIN} {
+	tls {
+		dns cloudflare {$DNS_API_TOKEN}
+	}
+	reverse_proxy 127.0.0.1:3000
+}

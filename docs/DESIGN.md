@@ -258,8 +258,13 @@ docker compose logs -f servertop  # 查看日志
 
 - **配置项**（全部服务器端环境变量，Web UI 无任何配置界面）：`PORT`、`ACCESS_TOKEN`、
   `SAMPLE_INTERVAL`（默认 2000ms）、`HISTORY_WINDOW`（默认 3600s）、`JWT_SECRET`（缺省随机生成）
-- **访问方式**（已定）：仅内网/VPN 使用，纯 HTTP 直连，不做 TLS；
-  若未来需要公网访问，再在外层加反向代理终止 TLS（WS 需透传 `Upgrade` 头）
+- **访问方式**：两种部署模式
+  1. **同源模式**（默认）：容器同时托管前后端，内网/VPN 纯 HTTP 直连
+  2. **分离模式**：前端托管在 GitHub Pages，后端经 Caddy（DNS-01 签发 Let's Encrypt
+     证书，服务器保持内网、零入站端口）提供 HTTPS/WSS；后端以 `ALLOWED_ORIGIN`
+     环境变量开启 CORS 白名单，WS 升级同样校验 Origin；前端的"服务器地址"存
+     浏览器 localStorage（客户端连接配置，不属于服务端配置面）；
+     部署见 `docker-compose.https.yml` + `deploy/caddy/`
 - **注意**：在 macOS 的 Docker Desktop 中运行时读到的是 Linux VM 的指标，仅用于开发调试；
   生产目标为 Linux 服务器
 

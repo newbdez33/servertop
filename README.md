@@ -2,7 +2,7 @@
 
 A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docker container on the server you want to watch, then open the dashboard from any browser — metrics stream in every 2 seconds over WebSocket.
 
-**[Live demo →](https://newbdez33.github.io/servertop/)** *(simulated data)*
+**[Live demo →](https://newbdez33.github.io/servertop/?demo)** *(simulated data)*
 
 ![Dashboard (dark)](docs/screenshots/dashboard-dark.png)
 
@@ -65,8 +65,34 @@ Everything is configured through environment variables — the web UI is a pure 
 | `SAMPLE_INTERVAL` | `2000` | Metrics sampling interval, ms |
 | `HISTORY_WINDOW` | `3600` | Seconds of history kept in memory |
 | `JWT_SECRET` | *(random)* | Pin this to keep sessions valid across restarts |
+| `ALLOWED_ORIGIN` | *(unset)* | Comma-separated origins allowed for cross-origin API access (e.g. `https://newbdez33.github.io` for the Pages-hosted frontend). Unset = same-origin only. |
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).
+
+## Hosted frontend (GitHub Pages) + HTTPS backend
+
+Instead of serving the UI from the container, you can use the frontend hosted at
+**https://newbdez33.github.io/servertop/** and point it at your own server. Because
+that page is HTTPS, the browser requires the backend to be HTTPS too (mixed-content
+policy). The included Caddy overlay gets a real Let's Encrypt certificate via
+**DNS-01** — your server stays intranet-only, nothing is exposed to the internet
+(Caddy binds `:443` on the intranet; port 80 is not used):
+
+1. **DNS**: create an A record, e.g. `monitor.example.com` → your server's *intranet* IP,
+   and get an API token for your DNS provider (needed for the DNS-01 challenge).
+2. **Configure** `docker-compose.https.yml`: set `SERVERTOP_DOMAIN`, `DNS_API_TOKEN`,
+   and `ALLOWED_ORIGIN` (the frontend origin). The default build uses the Cloudflare
+   DNS module — for another provider change `DNS_PLUGIN` and the `dns` line in
+   [`deploy/caddy/Caddyfile`](deploy/caddy/Caddyfile) (see [caddy-dns](https://github.com/caddy-dns)).
+3. **Run**:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+   ```
+
+4. Open `https://newbdez33.github.io/servertop/`, enter `https://monitor.example.com`
+   as the Server URL, and sign in. The server address is stored in your browser
+   (a client-side setting — the server itself still has no web-configurable state).
 
 ## API
 
