@@ -580,9 +580,13 @@ export function ContainerCard({
             <tbody>
               {visible.map(c => (
                 <tr key={c.id} className="hover:bg-surface-2">
-                  <Td className="font-semibold">{c.name}</Td>
+                  <Td className="font-semibold">
+                    <span className="block max-w-[9rem] truncate" title={c.name}>
+                      {c.name}
+                    </span>
+                  </Td>
                   <Td className="num text-ink-3">
-                    <span className="block max-w-[11rem] truncate" title={c.image}>
+                    <span className="block max-w-[8rem] truncate" title={c.image}>
                       {c.image}
                     </span>
                   </Td>
