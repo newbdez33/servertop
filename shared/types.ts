@@ -94,6 +94,32 @@ export interface ContainerInfo {
   startedAt: number | null;
 }
 
+export type CardId =
+  | 'cpu-tile'
+  | 'memory-tile'
+  | 'disk-tile'
+  | 'network-tile'
+  | 'cpu-chart'
+  | 'network-chart'
+  | 'memory'
+  | 'disk'
+  | 'system'
+  | 'processes'
+  | 'docker';
+
+export interface LayoutCardSpec {
+  id: CardId;
+  /** Grid width on large screens, 1–12 columns (per-card default when omitted) */
+  span?: number;
+  /** Max rows for list cards (processes, docker) */
+  limit?: number;
+}
+
+/** Dashboard card set/order, loaded from a server-side JSON file (LAYOUT_FILE) */
+export interface DashboardLayout {
+  cards: LayoutCardSpec[];
+}
+
 export interface SystemInfo {
   hostname: string;
   os: string;
@@ -106,6 +132,8 @@ export interface SystemInfo {
   dockerAvailable: boolean;
   agentVersion: string;
   sampleIntervalMs: number;
+  /** null = client renders its default layout */
+  layout: DashboardLayout | null;
 }
 
 export type WsMessage =

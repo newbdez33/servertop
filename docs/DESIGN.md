@@ -293,8 +293,12 @@ docker compose up -d --build      # 首次部署 / 本地构建升级
 docker compose logs -f servertop  # 查看日志
 ```
 
-- **配置项**（全部服务器端环境变量，Web UI 无任何配置界面）：`PORT`、`ACCESS_TOKEN`、
-  `SAMPLE_INTERVAL`（默认 2000ms）、`HISTORY_WINDOW`（默认 3600s）、`JWT_SECRET`（缺省随机生成）
+- **配置项**（全部服务器端，Web UI 无任何配置界面）：环境变量 `PORT`、`ACCESS_TOKEN`、
+  `SAMPLE_INTERVAL`（默认 2000ms）、`HISTORY_WINDOW`（默认 3600s）、`JWT_SECRET`（缺省随机生成）、
+  `LAYOUT_FILE`（默认 `layout.json`）
+- **仪表盘布局**：服务器端 JSON 文件（模板 `layout.example.json`）定义卡片集合/顺序/
+  宽度（12 栅格 `span`）/列表行数（`limit`），经 `/api/system` 的 `layout` 字段下发，
+  前端照单渲染；文件缺失或非法回退默认布局（仅告警不崩溃）；修改后重启生效
 - **访问方式**：两种部署模式
   1. **同源模式**（默认）：容器同时托管前后端，内网/VPN 纯 HTTP 直连
   2. **分离模式**：前端托管在 GitHub Pages，后端经 Caddy（DNS-01 签发 Let's Encrypt

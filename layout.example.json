@@ -1,0 +1,16 @@
+{
+  "$comment": "ServerTop dashboard layout — copy to layout.json next to the app (Docker: mount as /app/layout.json) and restart. Cards render in order; omitted cards are hidden. 'span' = width on large screens in a 12-column grid; 'limit' = max rows for list cards (processes, docker). This example reproduces the default layout.",
+  "cards": [
+    "cpu-tile",
+    "memory-tile",
+    "disk-tile",
+    "network-tile",
+    { "id": "cpu-chart", "span": 6 },
+    { "id": "network-chart", "span": 6 },
+    { "id": "memory", "span": 4 },
+    { "id": "disk", "span": 4 },
+    { "id": "system", "span": 4 },
+    { "id": "processes", "span": 6, "limit": 6 },
+    { "id": "docker", "span": 6, "limit": 6 }
+  ]
+}

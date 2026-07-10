@@ -4,6 +4,7 @@ import os from 'node:os';
 import si from 'systeminformation';
 import type { Systeminformation } from 'systeminformation';
 import { config } from './config.js';
+import { loadLayout } from './layout.js';
 import type {
   ContainerInfo,
   DiskMetrics,
@@ -155,6 +156,7 @@ export class Collector extends EventEmitter {
       dockerAvailable: this.dockerAvailable,
       agentVersion: config.agentVersion,
       sampleIntervalMs: config.sampleIntervalMs,
+      layout: loadLayout(config.layoutFile),
     };
   }
 

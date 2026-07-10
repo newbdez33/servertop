@@ -39,91 +39,115 @@ const loadTone = (pct: number): string =>
 
 /* ── Stat tiles ─────────────────────────────────────────────────────── */
 
-export function StatTiles({
-  snapshot,
-  history,
-}: {
+export interface CardBase {
+  className: string;
+  i: number;
+}
+
+interface TileData {
   snapshot: MetricsSnapshot;
   history: HistoryPoint[];
-}) {
-  const { cpu, mem, disk, net } = snapshot;
-  const primary = net[0];
-  const rootDisk = disk.find(d => d.mount === '/') ?? disk[0];
-  const memPct = mem.total ? (mem.used / mem.total) * 100 : 0;
-  const spark = (sel: (h: HistoryPoint) => number): number[] => history.slice(-30).map(sel);
+}
 
+const spark = (history: HistoryPoint[], sel: (h: HistoryPoint) => number): number[] =>
+  history.slice(-30).map(sel);
+
+export function CpuTile({ className, i, snapshot, history }: CardBase & TileData) {
+  const { cpu } = snapshot;
   return (
-    <>
-      <Tile
-        i={0}
-        label="CPU"
-        icon={<CpuIcon size={13} color="var(--cpu)" />}
-        value={cpu.usage.toFixed(1)}
-        unit="%"
-        ctx={
+    <Tile
+      className={className}
+      i={i}
+      label="CPU"
+      icon={<CpuIcon size={13} color="var(--cpu)" />}
+      value={cpu.usage.toFixed(1)}
+      unit="%"
+      ctx={
+        <>
+          <span className="num">{cpu.perCore.length}</span> cores · load{' '}
+          <span className="num">{cpu.load[0].toFixed(2)}</span>
+        </>
+      }
+      values={spark(history, h => h.cpu)}
+      color="var(--cpu)"
+    />
+  );
+}
+
+export function MemoryTile({ className, i, snapshot, history }: CardBase & TileData) {
+  const { mem } = snapshot;
+  const memPct = mem.total ? (mem.used / mem.total) * 100 : 0;
+  return (
+    <Tile
+      className={className}
+      i={i}
+      label="Memory"
+      icon={<MemIcon size={13} color="var(--mem)" />}
+      value={memPct.toFixed(1)}
+      unit="%"
+      ctx={
+        <>
+          <span className="num">{fmtGB(mem.used, 1)}</span> /{' '}
+          <span className="num">{fmtGB(mem.total)}</span> GB used
+        </>
+      }
+      values={spark(history, h => h.mem)}
+      color="var(--mem)"
+    />
+  );
+}
+
+export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
+  const rootDisk = snapshot.disk.find(d => d.mount === '/') ?? snapshot.disk[0];
+  return (
+    <Tile
+      className={className}
+      i={i}
+      label={rootDisk ? `Disk ${rootDisk.mount}` : 'Disk'}
+      icon={<DiskIcon size={13} color="var(--disk)" />}
+      value={rootDisk ? rootDisk.usedPct.toFixed(1) : '—'}
+      unit="%"
+      ctx={
+        rootDisk ? (
           <>
-            <span className="num">{cpu.perCore.length}</span> cores · load{' '}
-            <span className="num">{cpu.load[0].toFixed(2)}</span>
+            <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
+            <span className="num">{fmtGBdec(rootDisk.size)}</span> GB used
           </>
-        }
-        values={spark(h => h.cpu)}
-        color="var(--cpu)"
-      />
-      <Tile
-        i={1}
-        label="Memory"
-        icon={<MemIcon size={13} color="var(--mem)" />}
-        value={memPct.toFixed(1)}
-        unit="%"
-        ctx={
-          <>
-            <span className="num">{fmtGB(mem.used, 1)}</span> /{' '}
-            <span className="num">{fmtGB(mem.total)}</span> GB used
-          </>
-        }
-        values={spark(h => h.mem)}
-        color="var(--mem)"
-      />
-      <Tile
-        i={2}
-        label={rootDisk ? `Disk ${rootDisk.mount}` : 'Disk'}
-        icon={<DiskIcon size={13} color="var(--disk)" />}
-        value={rootDisk ? rootDisk.usedPct.toFixed(1) : '—'}
-        unit="%"
-        ctx={
-          rootDisk ? (
-            <>
-              <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
-              <span className="num">{fmtGBdec(rootDisk.size)}</span> GB used
-            </>
-          ) : (
-            'no data'
-          )
-        }
-        values={[]}
-        color="var(--disk)"
-      />
-      <Tile
-        i={3}
-        label="Network"
-        icon={<NetIcon size={13} color="var(--net-rx)" />}
-        value={`↓${primary ? fmtRate(primary.rxSec).replace(/ /, ' ') : '—'}`}
-        unit=""
-        small
-        ctx={
-          <>
-            up ↑ <span className="num">{primary ? fmtRate(primary.txSec) : '—'}</span>
-            {primary ? ` · ${primary.iface}` : ''}
-          </>
-        }
-        values={spark(h => toMBs(h.rx))}
-        color="var(--net-rx)"
-      />
-    </>
+        ) : (
+          'no data'
+        )
+      }
+      values={[]}
+      color="var(--disk)"
+    />
+  );
+}
+
+export function NetworkTile({ className, i, snapshot, history }: CardBase & TileData) {
+  const primary = snapshot.net[0];
+  return (
+    <Tile
+      className={className}
+      i={i}
+      label="Network"
+      icon={<NetIcon size={13} color="var(--net-rx)" />}
+      value={`↓${primary ? fmtRate(primary.rxSec).replace(/ /, ' ') : '—'}`}
+      unit=""
+      small
+      ctx={
+        <>
+          up ↑ <span className="num">{primary ? fmtRate(primary.txSec) : '—'}</span>
+          {primary ? ` · ${primary.iface}` : ''}
+        </>
+      }
+      values={spark(history, h => toMBs(h.rx))}
+      color="var(--net-rx)"
+    />
   );
 }
 
 function Tile({
+  className,
   i,
   label,
   icon,
@@ -133,8 +157,7 @@ function Tile({
   values,
   color,
   small = false,
-}: {
-  i: number;
+}: CardBase & {
   label: string;
   icon: React.ReactNode;
   value: string;
@@ -145,7 +168,7 @@ function Tile({
   small?: boolean;
 }) {
   return (
-    <Card i={i} className="col-span-12 flex flex-col gap-1 sm:col-span-6 lg:col-span-3">
+    <Card i={i} className={`flex flex-col gap-1 ${className}`}>
       <span className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-2">
         {icon}
         {label}
@@ -167,16 +190,18 @@ function Tile({
 /* ── CPU ────────────────────────────────────────────────────────────── */
 
 export function CpuCard({
+  className,
+  i,
   snapshot,
   history,
   intervalMs,
-}: {
+}: CardBase & {
   snapshot: MetricsSnapshot;
   history: HistoryPoint[];
   intervalMs: number;
 }) {
   return (
-    <Card i={4} className="col-span-12 lg:col-span-6">
+    <Card i={i} className={className}>
       <CardHead
         title="CPU Usage"
         icon={<CpuIcon color="var(--cpu)" />}
@@ -226,7 +251,7 @@ export function CpuCard({
 
 /* ── Memory ─────────────────────────────────────────────────────────── */
 
-export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
+export function MemoryCard({ className, i, snapshot }: CardBase & { snapshot: MetricsSnapshot }) {
   const { mem } = snapshot;
   const pct = (v: number): number => (mem.total ? (v / mem.total) * 100 : 0);
   const usedPct = pct(mem.used);
@@ -256,7 +281,7 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
   ];
 
   return (
-    <Card i={6} className="col-span-12 md:col-span-6 lg:col-span-4">
+    <Card i={i} className={className}>
       <CardHead
         title="Memory"
         icon={<MemIcon color="var(--mem)" />}
@@ -299,10 +324,12 @@ export function MemoryCard({ snapshot }: { snapshot: MetricsSnapshot }) {
 /* ── Network ────────────────────────────────────────────────────────── */
 
 export function NetworkCard({
+  className,
+  i,
   snapshot,
   history,
   intervalMs,
-}: {
+}: CardBase & {
   snapshot: MetricsSnapshot;
   history: HistoryPoint[];
   intervalMs: number;
@@ -314,7 +341,7 @@ export function NetworkCard({
   const yTicks = [0, yMax / 2, yMax].map(v => +v.toFixed(3));
 
   return (
-    <Card i={5} className="col-span-12 lg:col-span-6">
+    <Card i={i} className={className}>
       <CardHead
         title={`Network${primary ? ` · ${primary.iface}` : ''}`}
         icon={<NetIcon color="var(--net-rx)" />}
@@ -355,11 +382,11 @@ export function NetworkCard({
 
 /* ── Disks ──────────────────────────────────────────────────────────── */
 
-export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
+export function DiskCard({ className, i, snapshot }: CardBase & { snapshot: MetricsSnapshot }) {
   const disks = snapshot.disk;
   const alerts = disks.filter(d => d.usedPct > 85);
   return (
-    <Card i={7} className="col-span-12 md:col-span-6 lg:col-span-4">
+    <Card i={i} className={className}>
       <CardHead
         title="Disk Partitions"
         icon={<DiskIcon color="var(--disk)" />}
@@ -396,18 +423,23 @@ export function DiskCard({ snapshot }: { snapshot: MetricsSnapshot }) {
 
 /* ── Processes ──────────────────────────────────────────────────────── */
 
-export function ProcessCard({ processes }: { processes: ProcessInfo[] }) {
+export function ProcessCard({
+  className,
+  i,
+  processes,
+  limit = 6,
+}: CardBase & { processes: ProcessInfo[]; limit?: number }) {
   const [sort, setSort] = useState<'cpu' | 'mem'>('cpu');
   const rows = [...processes]
     .sort((a, b) => (sort === 'cpu' ? b.cpu - a.cpu : b.memBytes - a.memBytes))
-    .slice(0, 6);
+    .slice(0, limit);
 
   return (
-    <Card i={9} className="col-span-12 lg:col-span-6">
+    <Card i={i} className={className}>
       <CardHead
         title="Processes"
         icon={<ActivityIcon color="var(--cpu)" />}
-        sub={`Top 6 by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
+        sub={`Top ${limit} by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
         right={
           <button
             onClick={() => setSort(s => (s === 'cpu' ? 'mem' : 'cpu'))}
@@ -502,25 +534,23 @@ function Td({
 
 /* ── Docker containers ──────────────────────────────────────────────── */
 
-const MAX_CONTAINERS = 6;
-
 export function ContainerCard({
+  className,
+  i,
   containers,
   available,
-}: {
-  containers: ContainerInfo[];
-  available: boolean;
-}) {
+  limit = 6,
+}: CardBase & { containers: ContainerInfo[]; available: boolean; limit?: number }) {
   const running = containers.filter(c => c.state === 'running').length;
   // Running containers first, capped for a compact single-screen layout
   const visible = [...containers]
     .sort((a, b) =>
       a.state === b.state ? a.name.localeCompare(b.name) : a.state === 'running' ? -1 : 1,
     )
-    .slice(0, MAX_CONTAINERS);
+    .slice(0, limit);
   const hidden = containers.length - visible.length;
   return (
-    <Card i={10} className="col-span-12 lg:col-span-6">
+    <Card i={i} className={className}>
       <CardHead
         title="Docker Containers"
         icon={<BoxIcon color="var(--net-rx)" />}
@@ -607,7 +637,7 @@ export function ContainerCard({
 
 /* ── System info ────────────────────────────────────────────────────── */
 
-export function SystemCard({ system }: { system: SystemInfo | null }) {
+export function SystemCard({ className, i, system }: CardBase & { system: SystemInfo | null }) {
   const rows: Array<[string, string]> = system
     ? [
         ['Hostname', system.hostname],
@@ -620,7 +650,7 @@ export function SystemCard({ system }: { system: SystemInfo | null }) {
     : [];
 
   return (
-    <Card i={8} className="col-span-12 md:col-span-6 lg:col-span-4">
+    <Card i={i} className={className}>
       <CardHead
         title="System"
         icon={<InfoIcon color="var(--accent)" />}

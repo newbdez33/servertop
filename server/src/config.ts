@@ -20,6 +20,8 @@ export const config = {
   jwtTtlSec: 24 * 3600,
   sampleIntervalMs: intEnv(env.SAMPLE_INTERVAL, 2000),
   historyWindowSec: intEnv(env.HISTORY_WINDOW, 3600),
+  /** Optional dashboard layout JSON (relative to the working dir; /app in Docker) */
+  layoutFile: env.LAYOUT_FILE ?? 'layout.json',
   /** Origins allowed for cross-origin API access (e.g. a GitHub Pages frontend). Empty = same-origin only. */
   allowedOrigins: (env.ALLOWED_ORIGIN ?? '')
     .split(',')

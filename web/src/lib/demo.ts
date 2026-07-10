@@ -64,6 +64,7 @@ export function createDemo(): Demo {
     dockerAvailable: true,
     agentVersion: '0.1.0',
     sampleIntervalMs: INTERVAL_MS,
+    layout: null,
   };
 
   const disks = [

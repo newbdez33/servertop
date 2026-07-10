@@ -70,6 +70,38 @@ Everything is configured through environment variables — the web UI is a pure 
 | `HISTORY_WINDOW` | `3600` | Seconds of history kept in memory |
 | `JWT_SECRET` | *(random)* | Pin this to keep sessions valid across restarts |
 | `ALLOWED_ORIGIN` | *(unset)* | Comma-separated origins allowed for cross-origin API access (e.g. `https://newbdez33.github.io` for the Pages-hosted frontend). Unset = same-origin only. |
+| `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
+
+### Dashboard layout (optional)
+
+Which cards show, their order, width and list length are configurable with a JSON
+file **on the server** — the web UI stays a pure read-only view. Copy
+[`layout.example.json`](layout.example.json) to `layout.json`, edit, and restart.
+In Docker, mount it (uncomment the line in `docker-compose.yml`):
+
+```yaml
+- ./layout.json:/app/layout.json:ro
+```
+
+Example — hide the network chart and Docker card, full-width CPU chart, 10 processes:
+
+```json
+{
+  "cards": [
+    "cpu-tile", "memory-tile", "disk-tile", "network-tile",
+    { "id": "cpu-chart", "span": 12 },
+    "memory", "disk", "system",
+    { "id": "processes", "span": 12, "limit": 10 }
+  ]
+}
+```
+
+- Cards render in array order; **omitted cards are hidden**.
+- `span` — card width on large screens in a 12-column grid (phones always stack).
+- `limit` — max rows for the list cards (`processes`, `docker`).
+- Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
+  `network-chart` `memory` `disk` `system` `processes` `docker`.
+- Missing file → default layout; invalid entries are skipped with a server-log warning.
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).
 
