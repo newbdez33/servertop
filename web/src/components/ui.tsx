@@ -64,14 +64,14 @@ export function Pill({ tone, children }: { tone: Tone; children: ReactNode }) {
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-surface py-0.5 pr-2.5 pl-2 text-[11px] font-semibold ${TEXT[tone]}`}
     >
-      <span className={`size-[7px] shrink-0 rounded-full ${DOT[tone]}`} />
+      <span className={`size-[7px] shrink-0 -translate-y-[0.5px] rounded-full ${DOT[tone]}`} />
       {children}
     </span>
   );
 }
 
 export function Dot({ tone }: { tone: Tone }) {
-  return <span className={`size-[7px] shrink-0 rounded-full ${DOT[tone]}`} />;
+  return <span className={`size-[7px] shrink-0 -translate-y-[0.5px] rounded-full ${DOT[tone]}`} />;
 }
 
 export function Swatch({ color, border = false }: { color: string; border?: boolean }) {

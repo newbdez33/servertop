@@ -21,7 +21,7 @@ function I({
       strokeLinejoin="round"
       style={{ color }}
       aria-hidden="true"
-      className="shrink-0"
+      className="shrink-0 -translate-y-[0.5px]"
     >
       {children}
     </svg>
