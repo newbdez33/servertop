@@ -169,7 +169,7 @@ function Tile({
 }) {
   return (
     <Card i={i} className={`flex flex-col gap-1 ${className}`}>
-      <span className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-2">
+      <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-ink-2 uppercase">
         {icon}
         {label}
       </span>

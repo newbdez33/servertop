@@ -33,7 +33,7 @@ export function CardHead({
   return (
     <div className="mb-1.5 flex items-start justify-between gap-2">
       <div>
-        <h2 className="flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-ink-2">
+        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.08em] text-ink-2 uppercase">
           {icon}
           {title}
         </h2>
