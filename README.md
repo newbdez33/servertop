@@ -69,6 +69,7 @@ Everything is configured through environment variables — the web UI is a pure 
 | `SAMPLE_INTERVAL` | `2000` | Metrics sampling interval, ms |
 | `HISTORY_WINDOW` | `3600` | Seconds of history kept in memory |
 | `JWT_SECRET` | *(random)* | Pin this to keep sessions valid across restarts |
+| `JWT_TTL` | `86400` | Session lifetime in seconds (e.g. `31536000` = 1 year for a wall-mounted dashboard; requires a pinned `JWT_SECRET` to survive restarts) |
 | `ALLOWED_ORIGIN` | *(unset)* | Comma-separated origins allowed for cross-origin API access (e.g. `https://newbdez33.github.io` for the Pages-hosted frontend). Unset = same-origin only. |
 | `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
 

@@ -295,7 +295,7 @@ docker compose logs -f servertop  # 查看日志
 
 - **配置项**（全部服务器端，Web UI 无任何配置界面）：环境变量 `PORT`、`ACCESS_TOKEN`、
   `SAMPLE_INTERVAL`（默认 2000ms）、`HISTORY_WINDOW`（默认 3600s）、`JWT_SECRET`（缺省随机生成）、
-  `LAYOUT_FILE`（默认 `layout.json`）
+  `JWT_TTL`（会话有效期秒数，默认 86400）、`LAYOUT_FILE`（默认 `layout.json`）
 - **仪表盘布局**：服务器端 JSON 文件（模板 `layout.example.json`）定义卡片集合/顺序/
   宽度（12 栅格 `span`）/列表行数（`limit`），经 `/api/system` 的 `layout` 字段下发，
   前端照单渲染；文件缺失或非法回退默认布局（仅告警不崩溃）；修改后重启生效

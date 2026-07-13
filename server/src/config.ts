@@ -17,7 +17,8 @@ export const config = {
   accessToken: env.ACCESS_TOKEN ?? '',
   authRequired: (env.ACCESS_TOKEN ?? '') !== '',
   jwtSecret: env.JWT_SECRET ?? crypto.randomBytes(32).toString('hex'),
-  jwtTtlSec: 24 * 3600,
+  /** Session lifetime in seconds (default 24h) */
+  jwtTtlSec: intEnv(env.JWT_TTL, 24 * 3600),
   sampleIntervalMs: intEnv(env.SAMPLE_INTERVAL, 2000),
   historyWindowSec: intEnv(env.HISTORY_WINDOW, 3600),
   /** Optional dashboard layout JSON (relative to the working dir; /app in Docker) */
