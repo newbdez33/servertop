@@ -564,7 +564,7 @@ export function ProcessCard({
             <tr>
               <Th>PID</Th>
               <Th>Name</Th>
-              <Th>User</Th>
+              <Th className="@max-[26rem]:hidden">User</Th>
               <Th right>CPU</Th>
               <Th right>Mem</Th>
             </tr>
@@ -573,8 +573,12 @@ export function ProcessCard({
             {rows.map(p => (
               <tr key={p.pid} className="hover:bg-surface-2">
                 <Td className="num text-ink-3">{p.pid}</Td>
-                <Td className="font-semibold">{p.name}</Td>
-                <Td className="text-ink-3">{p.user}</Td>
+                <Td className="w-full max-w-0 font-semibold">
+                  <span className="block truncate" title={p.name}>
+                    {p.name}
+                  </span>
+                </Td>
+                <Td className="text-ink-3 @max-[26rem]:hidden">{p.user}</Td>
                 <Td right>
                   <span className="inline-flex items-center justify-end gap-1.5">
                     <span className="block h-[7px] w-[46px] overflow-hidden rounded-full bg-surface-2">
@@ -612,10 +616,18 @@ export function ProcessCard({
   );
 }
 
-function Th({ children, right = false }: { children: React.ReactNode; right?: boolean }) {
+function Th({
+  children,
+  right = false,
+  className = '',
+}: {
+  children: React.ReactNode;
+  right?: boolean;
+  className?: string;
+}) {
   return (
     <th
-      className={`border-b border-line px-2 py-0.5 text-[10px] font-semibold tracking-wider whitespace-nowrap text-ink-3 uppercase ${right ? 'text-right' : 'text-left'}`}
+      className={`border-b border-line px-2 py-0.5 text-[10px] font-semibold tracking-wider whitespace-nowrap text-ink-3 uppercase ${right ? 'text-right' : 'text-left'} ${className}`}
     >
       {children}
     </th>
@@ -678,11 +690,11 @@ export function ContainerCard({
             <thead>
               <tr>
                 <Th>Name</Th>
-                <Th>Image</Th>
+                <Th className="@max-[28rem]:hidden">Image</Th>
                 <Th>Status</Th>
                 <Th right>CPU</Th>
                 <Th right>Mem</Th>
-                <Th right>Uptime</Th>
+                <Th right className="@max-[28rem]:hidden">Uptime</Th>
               </tr>
             </thead>
             <tbody>
@@ -693,7 +705,7 @@ export function ContainerCard({
                       {c.name}
                     </span>
                   </Td>
-                  <Td className="num text-ink-3">
+                  <Td className="num text-ink-3 @max-[28rem]:hidden">
                     <span className="block max-w-[8rem] truncate" title={c.image}>
                       {c.image}
                     </span>
@@ -714,7 +726,7 @@ export function ContainerCard({
                   <Td right className="num">
                     {c.memBytes !== null ? fmtBytes(c.memBytes) : '—'}
                   </Td>
-                  <Td right className="num text-ink-3">
+                  <Td right className="num text-ink-3 @max-[28rem]:hidden">
                     {c.startedAt === null
                       ? '—'
                       : c.state === 'running'
@@ -874,9 +886,9 @@ export function LlmCard({
             <tr>
               <Th>Server</Th>
               <Th>Model</Th>
-              <Th right>Ctx</Th>
+              <Th right className="@max-[28rem]:hidden">Ctx</Th>
               <Th right>Slots</Th>
-              <Th right>Ping</Th>
+              <Th right className="@max-[28rem]:hidden">Ping</Th>
               <Th right>CPU</Th>
               <Th right>Mem</Th>
             </tr>
@@ -897,13 +909,13 @@ export function LlmCard({
                     {s.model ?? (s.up ? '—' : 'down')}
                   </span>
                 </Td>
-                <Td right className="num">
+                <Td right className="num @max-[28rem]:hidden">
                   {fmtCtx(s.contextLength)}
                 </Td>
                 <Td right className="num">
                   {s.slotsTotal !== null ? `${s.slotsBusy}/${s.slotsTotal}` : '—'}
                 </Td>
-                <Td right className="num">
+                <Td right className="num @max-[28rem]:hidden">
                   {s.latencyMs !== null ? `${s.latencyMs}ms` : '—'}
                 </Td>
                 <Td right>

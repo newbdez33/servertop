@@ -13,7 +13,7 @@ export function Card({
 }) {
   return (
     <section
-      className={`card-rise min-w-0 rounded-[10px] border border-line bg-surface p-2.5 [box-shadow:var(--shadow)] ${className}`}
+      className={`card-rise @container min-w-0 rounded-[10px] border border-line bg-surface p-2.5 [box-shadow:var(--shadow)] ${className}`}
       style={{ '--i': i } as CSSProperties}
       title={title}
     >
