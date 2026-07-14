@@ -3,9 +3,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import si from 'systeminformation';
 import type { Systeminformation } from 'systeminformation';
+import { ClaudeScanner } from './claude.js';
 import { config } from './config.js';
 import { loadLayout } from './layout.js';
 import type {
+  ClaudeInfo,
   ContainerInfo,
   DiskMetrics,
   MetricsSnapshot,
@@ -96,6 +98,9 @@ export class Collector extends EventEmitter {
   containers: ContainerInfo[] = [];
   dockerAvailable = false;
   system: SystemInfo | null = null;
+  claude: ClaudeInfo | null = null;
+
+  private claudeScanner = new ClaudeScanner(config.claudeDir);
 
   private disks: DiskMetrics[] = [];
   private tempC: number | null = null;
@@ -111,12 +116,14 @@ export class Collector extends EventEmitter {
       this.sampleProcesses().catch(logErr),
       this.sampleContainers().catch(logErr),
     ]);
+    this.sampleClaude();
 
     this.timers = [
       setInterval(() => void this.sampleFast().catch(logErr), config.sampleIntervalMs),
       setInterval(() => void this.sampleProcesses().catch(logErr), 5_000),
       setInterval(() => void this.sampleContainers().catch(logErr), 5_000),
       setInterval(() => void this.sampleSlow().catch(logErr), 10_000),
+      setInterval(() => this.sampleClaude(), 60_000),
     ];
   }
 
@@ -247,6 +254,20 @@ export class Collector extends EventEmitter {
       });
       this.containers = containers;
       this.emit('containers', containers);
+    } catch (err) {
+      logErr(err);
+    }
+  }
+
+  private sampleClaude(): void {
+    if (!this.claudeScanner.available) return;
+    try {
+      const info = this.claudeScanner.scan();
+      // Broadcast only when something changed — scans are cheap, pushes aren't free
+      if (JSON.stringify(info) !== JSON.stringify(this.claude)) {
+        this.claude = info;
+        this.emit('claude', info);
+      }
     } catch (err) {
       logErr(err);
     }

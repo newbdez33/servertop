@@ -1,10 +1,12 @@
 import type {
+  ClaudeInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
   ProcessInfo,
   SystemInfo,
 } from '../../../shared/types';
+import { DEFAULT_LAYOUT } from './layout';
 
 /**
  * Demo mode: simulated data, no backend. Activated at runtime with ?demo
@@ -40,6 +42,7 @@ export interface Demo {
   tick: () => MetricsSnapshot;
   processes: () => ProcessInfo[];
   containers: () => ContainerInfo[];
+  claude: () => ClaudeInfo;
 }
 
 export function createDemo(): Demo {
@@ -64,7 +67,8 @@ export function createDemo(): Demo {
     dockerAvailable: true,
     agentVersion: '0.1.0',
     sampleIntervalMs: INTERVAL_MS,
-    layout: null,
+    // Demo shows everything, including the Claude Code sessions card
+    layout: { cards: [...DEFAULT_LAYOUT, { id: 'claude', limit: 4 }] },
   };
 
   const disks = [
@@ -125,6 +129,14 @@ export function createDemo(): Demo {
     };
   };
 
+  // [id, project, branch, title, minutes-ago, turns, active]
+  const claudeSessions: Array<[string, string, string, string, number, number, boolean]> = [
+    ['a1e2', '/home/dev/servertop', 'main', 'Add per-metric domain colors to the dashboard', 1, 342, true],
+    ['b3f4', '/home/dev/api-gateway', 'feat/rate-limit', 'Implement sliding-window rate limiting for the public API', 240, 187, false],
+    ['c5a6', '/home/dev/servertop', 'main', 'Fix horizontal scroll in the Docker containers card', 2 * 1440, 96, false],
+    ['d7b8', '/home/dev/data-pipeline', 'main', 'Why does the nightly ETL job OOM on the join step?', 3 * 1440, 61, false],
+  ];
+
   return {
     system,
     seedHistory: () => {
@@ -157,5 +169,29 @@ export function createDemo(): Demo {
           ? { ...c, cpuPct: round1(clamp(c.cpuPct + (Math.random() - 0.5) * 2, 0.1, 99)) }
           : c,
       ),
+    claude: () => {
+      const now = Date.now();
+      const sessions = claudeSessions.map(([id, project, gitBranch, title, minAgo, turns, active]) => ({
+        id,
+        project,
+        title,
+        gitBranch,
+        startedAt: now - minAgo * 60_000 - 3_600_000,
+        lastActiveAt: now - minAgo * 60_000,
+        turns,
+        sizeBytes: turns * 40_000,
+        active,
+      }));
+      return {
+        available: true,
+        sessions,
+        stats: {
+          totalSessions: sessions.length,
+          totalProjects: 3,
+          sessionsToday: 2,
+          activeNow: 1,
+        },
+      };
+    },
   };
 }

@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const env = process.env;
 
@@ -23,6 +25,8 @@ export const config = {
   historyWindowSec: intEnv(env.HISTORY_WINDOW, 3600),
   /** Optional dashboard layout JSON (relative to the working dir; /app in Docker) */
   layoutFile: env.LAYOUT_FILE ?? 'layout.json',
+  /** Claude Code data dir; sessions card auto-enables when it exists */
+  claudeDir: env.CLAUDE_DIR ?? path.join(os.homedir(), '.claude'),
   /** Origins allowed for cross-origin API access (e.g. a GitHub Pages frontend). Empty = same-origin only. */
   allowedOrigins: (env.ALLOWED_ORIGIN ?? '')
     .split(',')

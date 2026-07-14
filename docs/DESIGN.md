@@ -299,6 +299,9 @@ docker compose logs -f servertop  # 查看日志
 - **仪表盘布局**：服务器端 JSON 文件（模板 `layout.example.json`）定义卡片集合/顺序/
   宽度（12 栅格 `span`）/列表行数（`limit`），经 `/api/system` 的 `layout` 字段下发，
   前端照单渲染；文件缺失或非法回退默认布局（仅告警不崩溃）；修改后重启生效
+- **Claude Code 会话卡**（卡片 id `claude`，不在默认布局中）：扫描 `CLAUDE_DIR/projects`
+  下的会话 transcript（JSONL），增量解析（按 mtime+size 缓存，分块流式找标题：压缩摘要 >
+  首条有效 prompt > assistant 首句），60s 周期 + WS 推送；mtime 5 分钟内标记为 running
 - **访问方式**：两种部署模式
   1. **同源模式**（默认）：容器同时托管前后端，内网/VPN 纯 HTTP 直连
   2. **分离模式**：前端托管在 GitHub Pages，后端经 Caddy（DNS-01 签发 Let's Encrypt

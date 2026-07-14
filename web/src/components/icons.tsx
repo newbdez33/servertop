@@ -82,3 +82,9 @@ export const InfoIcon = (p: IconProps) => (
     <path d="M12 16v-4M12 8h.01" />
   </I>
 );
+
+export const ClaudeIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M12 3v18M5.6 5.6l12.8 12.8M3 12h18M5.6 18.4L18.4 5.6" />
+  </I>
+);

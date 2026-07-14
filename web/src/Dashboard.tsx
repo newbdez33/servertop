@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type {
+  ClaudeInfo,
   ContainerInfo,
   HistoryPoint,
   LayoutCardSpec,
@@ -8,6 +9,7 @@ import type {
   SystemInfo,
 } from '../../shared/types';
 import {
+  ClaudeCard,
   ContainerCard,
   CpuCard,
   CpuTile,
@@ -30,6 +32,7 @@ interface CardCtx {
   system: SystemInfo | null;
   processes: ProcessInfo[];
   containers: ContainerInfo[];
+  claude: ClaudeInfo | null;
   intervalMs: number;
 }
 
@@ -83,6 +86,8 @@ function renderCard(spec: LayoutCardSpec, idx: number, ctx: CardCtx): ReactNode 
           limit={spec.limit}
         />
       );
+    case 'claude':
+      return <ClaudeCard key={key} {...base} claude={ctx.claude} limit={spec.limit} />;
   }
 }
 
@@ -96,7 +101,7 @@ export function Dashboard({
   canLogout: boolean;
 }) {
   const { dark, toggle } = theme;
-  const { status, system, snapshot, processes, containers, history } = useLive(onAuthFailed);
+  const { status, system, snapshot, processes, containers, claude, history } = useLive(onAuthFailed);
   const intervalMs = system?.sampleIntervalMs ?? 2000;
   const cards = system?.layout?.cards ?? DEFAULT_LAYOUT;
 
@@ -120,6 +125,7 @@ export function Dashboard({
               system,
               processes,
               containers,
+              claude,
               intervalMs,
             }),
           )

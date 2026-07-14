@@ -21,6 +21,8 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Network** — download/upload rate charts for the default interface
 - **Processes** — top consumers, sortable by CPU or memory
 - **Docker containers** — state, CPU, memory, uptime
+- **Claude Code sessions** — recent sessions across projects with live "running"
+  status (auto-enabled when `~/.claude` exists on the monitored host)
 - **Live** — 2s WebSocket push, automatic reconnect, REST polling fallback
 - **Token auth** — single access token → 24h JWT, login rate-limited
 - **Read-only by design** — zero configuration surface in the web UI; everything is configured server-side via environment variables
@@ -72,6 +74,7 @@ Everything is configured through environment variables — the web UI is a pure 
 | `JWT_TTL` | `86400` | Session lifetime in seconds (e.g. `31536000` = 1 year for a wall-mounted dashboard; requires a pinned `JWT_SECRET` to survive restarts) |
 | `ALLOWED_ORIGIN` | *(unset)* | Comma-separated origins allowed for cross-origin API access (e.g. `https://newbdez33.github.io` for the Pages-hosted frontend). Unset = same-origin only. |
 | `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
+| `CLAUDE_DIR` | `~/.claude` | Claude Code data dir for the sessions card; card auto-hides when absent. Docker: mount `~/.claude:/app/.claude:ro` and set `CLAUDE_DIR=/app/.claude` |
 
 ### Dashboard layout (optional)
 
@@ -101,7 +104,8 @@ Example — hide the network chart and Docker card, full-width CPU chart, 10 pro
 - `span` — card width on large screens in a 12-column grid (phones always stack).
 - `limit` — max rows for the list cards (`processes`, `docker`).
 - Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
-  `network-chart` `memory` `disk` `system` `processes` `docker`.
+  `network-chart` `memory` `disk` `system` `processes` `docker` `claude`
+  (`claude` is not in the default layout — add it to your `layout.json`).
 - Missing file → default layout; invalid entries are skipped with a server-log warning.
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).

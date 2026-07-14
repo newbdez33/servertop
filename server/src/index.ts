@@ -147,11 +147,13 @@ async function main(): Promise<void> {
     if (collector.snapshot) send(ws, { type: 'metrics', data: collector.snapshot });
     send(ws, { type: 'processes', data: collector.processes });
     send(ws, { type: 'containers', data: collector.containers });
+    if (collector.claude) send(ws, { type: 'claude', data: collector.claude });
   });
 
   collector.on('metrics', data => broadcast({ type: 'metrics', data }));
   collector.on('processes', data => broadcast({ type: 'processes', data }));
   collector.on('containers', data => broadcast({ type: 'containers', data }));
+  collector.on('claude', data => broadcast({ type: 'claude', data }));
 
   const heartbeat = setInterval(() => {
     for (const ws of clients) {

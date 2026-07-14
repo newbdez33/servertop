@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
+  ClaudeInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -21,6 +22,7 @@ export interface LiveState {
   snapshot: MetricsSnapshot | null;
   processes: ProcessInfo[];
   containers: ContainerInfo[];
+  claude: ClaudeInfo | null;
   history: HistoryPoint[];
 }
 
@@ -35,6 +37,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
   const [snapshot, setSnapshot] = useState<MetricsSnapshot | null>(null);
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [containers, setContainers] = useState<ContainerInfo[]>([]);
+  const [claude, setClaude] = useState<ClaudeInfo | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
 
   const onAuthFailedRef = useRef(onAuthFailed);
@@ -48,6 +51,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
       setHistory(demo.seedHistory());
       setProcesses(demo.processes());
       setContainers(demo.containers());
+      setClaude(demo.claude());
       setStatus('online');
       const applyTick = (): void => {
         const m = demo.tick();
@@ -173,6 +177,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
         if (msg.type === 'metrics') applyMetrics(msg.data);
         else if (msg.type === 'processes') setProcesses(msg.data);
         else if (msg.type === 'containers') setContainers(msg.data);
+        else if (msg.type === 'claude') setClaude(msg.data);
       };
 
       ws.onclose = () => {
@@ -201,5 +206,5 @@ export function useLive(onAuthFailed: () => void): LiveState {
     };
   }, []);
 
-  return { status, system, snapshot, processes, containers, history };
+  return { status, system, snapshot, processes, containers, claude, history };
 }

@@ -27,6 +27,7 @@ export const DEFAULT_SPAN: Record<CardId, number> = {
   system: 4,
   processes: 6,
   docker: 6,
+  claude: 12,
 };
 
 // Literal class names so Tailwind's scanner generates them

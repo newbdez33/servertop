@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type {
+  ClaudeInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -11,6 +12,7 @@ import { fmtAgo, fmtBytes, fmtGB, fmtGBdec, fmtRate, fmtUptime, niceMax, toMBs }
 import {
   ActivityIcon,
   BoxIcon,
+  ClaudeIcon,
   CpuIcon,
   DiskIcon,
   InfoIcon,
@@ -635,6 +637,86 @@ export function ContainerCard({
           )}
         </div>
       )}
+    </Card>
+  );
+}
+
+/* ── Claude Code sessions ───────────────────────────────────────────── */
+
+const basename = (p: string): string => p.split('/').filter(Boolean).pop() ?? p;
+
+export function ClaudeCard({
+  className,
+  i,
+  claude,
+  limit = 6,
+}: CardBase & { claude: ClaudeInfo | null; limit?: number }) {
+  if (!claude?.available) return null;
+  const { stats } = claude;
+  const rows = claude.sessions.slice(0, limit);
+  return (
+    <Card i={i} className={className}>
+      <CardHead
+        title="Claude Code"
+        icon={<ClaudeIcon color="var(--accent)" />}
+        sub={`${stats.sessionsToday} today · ${stats.totalSessions} sessions in ${stats.totalProjects} projects`}
+        right={
+          stats.activeNow > 0 ? (
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
+              <Dot tone="good" />
+              {stats.activeNow} running
+            </span>
+          ) : undefined
+        }
+      />
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[11.5px]">
+          <thead>
+            <tr>
+              <Th>Project</Th>
+              <Th>Session</Th>
+              <Th right>Turns</Th>
+              <Th right>Active</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(sess => (
+              <tr key={sess.id} className="hover:bg-surface-2">
+                <Td className="font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Dot tone={sess.active ? 'good' : 'muted'} />
+                    <span
+                      className="block max-w-[8rem] truncate"
+                      title={`${sess.project}${sess.gitBranch ? ` (${sess.gitBranch})` : ''}`}
+                    >
+                      {basename(sess.project)}
+                    </span>
+                  </span>
+                </Td>
+                <Td className="text-ink-2">
+                  <span className="block max-w-[18rem] truncate" title={sess.title}>
+                    {sess.title}
+                  </span>
+                </Td>
+                <Td right className="num">
+                  {sess.turns ?? '—'}
+                </Td>
+                <Td right className={`num ${sess.active ? 'font-semibold text-good' : 'text-ink-3'}`}>
+                  {sess.active ? 'now' : fmtAgo(sess.lastActiveAt)}
+                </Td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <Td className="text-ink-3">No sessions</Td>
+                <Td> </Td>
+                <Td right> </Td>
+                <Td right> </Td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }
