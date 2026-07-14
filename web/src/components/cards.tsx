@@ -655,7 +655,7 @@ export function ClaudeCard({
     <Card i={i} className={className}>
       <CardHead
         title="Claude Code"
-        icon={<ClaudeIcon color="var(--accent)" />}
+        icon={<ClaudeIcon color="var(--claude)" />}
         sub={`${stats.sessionsToday} today · ${stats.totalSessions} sessions in ${stats.totalProjects} projects`}
         right={
           stats.activeNow > 0 ? (
