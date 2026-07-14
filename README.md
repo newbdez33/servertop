@@ -23,6 +23,8 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Docker containers** — state, CPU, memory, uptime
 - **Claude Code sessions** — recent sessions across projects with live "running"
   status (auto-enabled when `~/.claude` exists on the monitored host)
+- **Configurable layout** — a server-side JSON file picks which cards show,
+  their order, widths and row limits (the web UI stays read-only)
 - **Live** — 2s WebSocket push, automatic reconnect, REST polling fallback
 - **Token auth** — single access token → 24h JWT, login rate-limited
 - **Read-only by design** — zero configuration surface in the web UI; everything is configured server-side via environment variables
