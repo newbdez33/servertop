@@ -127,25 +127,37 @@ export function MemoryTile({ className, i, snapshot, history }: CardBase & TileD
   );
 }
 
+/** Anti-aliased SVG pie: track circle + filled wedge from 12 o'clock, clockwise */
 function Pie({
   pct,
   color,
-  size = 18,
+  size = 30,
 }: {
   pct: number;
   color: string;
   size?: number;
 }) {
   const clamped = Math.min(100, Math.max(0, pct));
+  const c = size / 2;
+  const r = c - 1; // room for the hairline ring
+  let wedge: string | null = null;
+  if (clamped >= 99.5) {
+    wedge = 'full';
+  } else if (clamped >= 0.5) {
+    const angle = (clamped / 100) * 2 * Math.PI;
+    const x = c + r * Math.sin(angle);
+    const y = c - r * Math.cos(angle);
+    wedge = `M ${c} ${c} L ${c} ${c - r} A ${r} ${r} 0 ${clamped > 50 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z`;
+  }
   return (
-    <span
-      className="inline-block shrink-0 rounded-full border border-line"
-      style={{
-        width: size,
-        height: size,
-        background: `conic-gradient(${color} ${clamped}%, var(--surface-2) 0)`,
-      }}
-    />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0" aria-hidden="true">
+      <circle cx={c} cy={c} r={r} fill="var(--surface-2)" stroke="var(--line)" strokeWidth="1" />
+      {wedge === 'full' ? (
+        <circle cx={c} cy={c} r={r} fill={color} />
+      ) : (
+        wedge && <path d={wedge} fill={color} />
+      )}
+    </svg>
   );
 }
 
