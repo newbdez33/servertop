@@ -113,9 +113,10 @@ Example — hide the network chart and Docker card, full-width CPU chart, 10 pro
 - `limit` — max rows for the list cards (`processes`, `docker`).
 - Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
   `network-chart` `memory` `disk` `system` `processes` `docker` `claude` `codex`
-  `llm` (the agent/LLM cards are not in the default layout — add them to your
-  `layout.json`, e.g. `{"id": "claude", "span": 6}` + `{"id": "codex", "span": 6}`
-  side by side, and `{"id": "llm", "span": 12}`).
+  `llm`. The default layout is tiles + charts + processes + docker; the detail
+  cards (`memory` `disk` `system`) and the agent/LLM cards are opt-in — the
+  tiles already carry the essentials (stacked memory bar, cache/swap, disk
+  alerts and per-partition tooltip, CPU model tooltip).
 - Missing file → default layout; invalid entries are skipped with a server-log warning.
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).

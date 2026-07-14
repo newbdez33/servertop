@@ -8,9 +8,6 @@ export const DEFAULT_LAYOUT: LayoutCardSpec[] = [
   { id: 'network-tile' },
   { id: 'cpu-chart' },
   { id: 'network-chart' },
-  { id: 'memory' },
-  { id: 'disk' },
-  { id: 'system' },
   { id: 'processes' },
   { id: 'docker' },
 ];

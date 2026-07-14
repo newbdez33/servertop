@@ -60,8 +60,19 @@ export function TopBar({
         <Pill tone={s.tone}>{s.label}</Pill>
         {IS_DEMO && <Pill tone="muted">Demo · simulated data</Pill>}
         {system && snapshot && (
-          <span className="text-[11.5px] text-ink-3 max-[560px]:hidden">
-            {system.os} · up <span className="num">{fmtUptime(snapshot.uptimeSec)}</span>
+          <span
+            className="text-[11.5px] text-ink-3 max-[560px]:hidden"
+            title={`Kernel ${system.kernel} · ServerTop v${system.agentVersion}`}
+          >
+            {system.os}
+            {system.ip && (
+              <>
+                {' · '}
+                <span className="num">{system.ip}</span>
+              </>
+            )}
+            {' · up '}
+            <span className="num">{fmtUptime(snapshot.uptimeSec)}</span>
           </span>
         )}
       </div>

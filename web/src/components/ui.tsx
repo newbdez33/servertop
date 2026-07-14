@@ -4,15 +4,18 @@ export function Card({
   children,
   className = '',
   i = 0,
+  title,
 }: {
   children: ReactNode;
   className?: string;
   i?: number;
+  title?: string;
 }) {
   return (
     <section
       className={`card-rise min-w-0 rounded-[10px] border border-line bg-surface p-2.5 [box-shadow:var(--shadow)] ${className}`}
       style={{ '--i': i } as CSSProperties}
+      title={title}
     >
       {children}
     </section>

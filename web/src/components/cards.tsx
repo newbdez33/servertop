@@ -25,6 +25,7 @@ import { TimeChart } from './TimeChart';
 import { BarRow, Card, CardHead, Dot, Swatch } from './ui';
 
 const MB = 1024 ** 2;
+const GB = 1024 ** 3;
 
 /** "Last N min" derived from the actual window (HISTORY_LEN × sample interval) */
 const windowLabel = (intervalMs: number): string => {
@@ -55,7 +56,13 @@ interface TileData {
 const spark = (history: HistoryPoint[], sel: (h: HistoryPoint) => number): number[] =>
   history.slice(-30).map(sel);
 
-export function CpuTile({ className, i, snapshot, history }: CardBase & TileData) {
+export function CpuTile({
+  className,
+  i,
+  snapshot,
+  history,
+  system,
+}: CardBase & TileData & { system: SystemInfo | null }) {
   const { cpu } = snapshot;
   return (
     <Tile
@@ -63,6 +70,7 @@ export function CpuTile({ className, i, snapshot, history }: CardBase & TileData
       i={i}
       label="CPU"
       icon={<CpuIcon size={13} color="var(--cpu)" />}
+      tooltip={system ? `${system.cpuModel} · ${system.cores} cores` : undefined}
       value={cpu.usage.toFixed(1)}
       unit="%"
       ctx={
@@ -79,19 +87,40 @@ export function CpuTile({ className, i, snapshot, history }: CardBase & TileData
 export function MemoryTile({ className, i, snapshot, history }: CardBase & TileData) {
   const { mem } = snapshot;
   const memPct = mem.total ? (mem.used / mem.total) * 100 : 0;
+  const cachedPct = mem.total ? (mem.cached / mem.total) * 100 : 0;
+  const tooltip =
+    `Used ${fmtGB(mem.used, 1)} GB (${memPct.toFixed(0)}%) · ` +
+    `Cache/buffer ${fmtGB(mem.cached, 1)} GB (${cachedPct.toFixed(0)}%) · ` +
+    `Free ${fmtGB(mem.free, 1)} GB · ` +
+    `Swap ${fmtGB(mem.swapUsed, 1)} / ${fmtGB(mem.swapTotal, 1)} GB`;
   return (
     <Tile
       className={className}
       i={i}
       label="Memory"
       icon={<MemIcon size={13} color="var(--mem)" />}
+      tooltip={tooltip}
       value={memPct.toFixed(1)}
       unit="%"
       ctx={
         <>
           <span className="num">{fmtGB(mem.used, 1)}</span> /{' '}
-          <span className="num">{fmtGB(mem.total)}</span> GB used
+          <span className="num">{fmtGB(mem.total)}</span> GB · cache{' '}
+          <span className="num">{fmtGB(mem.cached)}</span> GB
+          {mem.swapUsed >= 0.1 * GB && (
+            <>
+              {' '}
+              · swap <span className="num">{fmtGB(mem.swapUsed, 1)}</span> GB
+            </>
+          )}
         </>
+      }
+      extra={
+        <div className="flex h-1 gap-[2px] overflow-hidden rounded-full" aria-hidden="true">
+          <span style={{ width: `${memPct}%`, background: 'var(--mem)' }} />
+          <span style={{ width: `${cachedPct}%`, background: 'var(--mem-soft)' }} />
+          <span className="flex-1" style={{ background: 'var(--surface-2)' }} />
+        </div>
       }
       series={[{ values: spark(history, h => h.mem), color: 'var(--mem)' }]}
     />
@@ -99,20 +128,41 @@ export function MemoryTile({ className, i, snapshot, history }: CardBase & TileD
 }
 
 export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
-  const rootDisk = snapshot.disk.find(d => d.mount === '/') ?? snapshot.disk[0];
+  const disks = snapshot.disk;
+  const rootDisk = disks.find(d => d.mount === '/') ?? disks[0];
+  const alert = disks.reduce(
+    (worst, d) => (d.usedPct > 85 && d.usedPct > (worst?.usedPct ?? 0) ? d : worst),
+    null as (typeof disks)[number] | null,
+  );
+  const alertColor = alert && alert.usedPct > 95 ? 'var(--load-high)' : 'var(--load-mid)';
   return (
     <Tile
       className={className}
       i={i}
       label={rootDisk ? `Disk ${rootDisk.mount}` : 'Disk'}
       icon={<DiskIcon size={13} color="var(--disk)" />}
+      tooltip={disks.map(d => `${d.mount} ${d.usedPct.toFixed(1)}%`).join(' · ')}
       value={rootDisk ? rootDisk.usedPct.toFixed(1) : '—'}
       unit="%"
+      valueColor={
+        rootDisk && rootDisk.usedPct > 95
+          ? 'var(--load-high)'
+          : rootDisk && rootDisk.usedPct > 85
+            ? 'var(--load-mid)'
+            : undefined
+      }
       ctx={
         rootDisk ? (
           <>
             <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
-            <span className="num">{fmtGBdec(rootDisk.size)}</span> GB used
+            <span className="num">{fmtGBdec(rootDisk.size)}</span> GB
+            {alert && (
+              <span style={{ color: alertColor }}>
+                {' '}
+                · ⚠ <span className="num">{alert.mount}</span>{' '}
+                <span className="num">{alert.usedPct.toFixed(0)}%</span>
+              </span>
+            )}
           </>
         ) : (
           'no data'
@@ -157,6 +207,9 @@ function Tile({
   unit,
   ctx,
   series,
+  tooltip,
+  valueColor,
+  extra,
   small = false,
 }: CardBase & {
   label: string;
@@ -165,10 +218,13 @@ function Tile({
   unit: string;
   ctx: React.ReactNode;
   series: SparkSeries[];
+  tooltip?: string;
+  valueColor?: string;
+  extra?: React.ReactNode;
   small?: boolean;
 }) {
   return (
-    <Card i={i} className={`flex flex-col gap-1 ${className}`}>
+    <Card i={i} title={tooltip} className={`flex flex-col gap-1 ${className}`}>
       <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.06em] text-ink-2 uppercase">
         {icon}
         {label}
@@ -176,13 +232,15 @@ function Tile({
       <div className="flex items-end justify-between gap-2">
         <span
           className={`num font-semibold leading-none tracking-tight ${small ? 'text-[15px]' : 'text-[19px]'}`}
+          style={valueColor ? { color: valueColor } : undefined}
         >
           {value}
           {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
         </span>
         <Sparkline series={series} />
       </div>
-      <span className="text-[10.5px] text-ink-3">{ctx}</span>
+      {extra}
+      <span className="block truncate text-[10.5px] text-ink-3">{ctx}</span>
     </Card>
   );
 }

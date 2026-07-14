@@ -46,7 +46,15 @@ function renderCard(spec: LayoutCardSpec, idx: number, ctx: CardCtx): ReactNode 
   const base = { className: gridClasses(spec.span ?? DEFAULT_SPAN[spec.id]), i: idx };
   switch (spec.id) {
     case 'cpu-tile':
-      return <CpuTile key={key} {...base} snapshot={ctx.snapshot} history={ctx.history} />;
+      return (
+        <CpuTile
+          key={key}
+          {...base}
+          snapshot={ctx.snapshot}
+          history={ctx.history}
+          system={ctx.system}
+        />
+      );
     case 'memory-tile':
       return <MemoryTile key={key} {...base} snapshot={ctx.snapshot} history={ctx.history} />;
     case 'disk-tile':
