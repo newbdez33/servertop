@@ -191,32 +191,19 @@ export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
         )
       }
       sparkSlot={
-        <span className="flex items-start gap-2">
-          {[...disks]
-            .sort((a, b) => (a.mount === '/' ? -1 : b.mount === '/' ? 1 : b.usedPct - a.usedPct))
-            .slice(0, 3)
-            .map(d => (
-              <span
-                key={d.mount}
-                className="flex flex-col items-center gap-[3px]"
-                title={`${d.mount} · ${d.usedPct.toFixed(1)}%`}
-              >
-                <Pie
-                  pct={d.usedPct}
-                  color={
-                    d.usedPct > 95
-                      ? 'var(--load-high)'
-                      : d.usedPct > 85
-                        ? 'var(--load-mid)'
-                        : 'var(--disk)'
-                  }
-                />
-                <span className="num max-w-12 truncate text-[8px] leading-none text-ink-3">
-                  {d.mount === '/' ? '/' : (d.mount.split('/').filter(Boolean).pop() ?? d.mount)}
-                </span>
-              </span>
-            ))}
-        </span>
+        rootDisk && (
+          <Pie
+            pct={rootDisk.usedPct}
+            size={30}
+            color={
+              rootDisk.usedPct > 95
+                ? 'var(--load-high)'
+                : rootDisk.usedPct > 85
+                  ? 'var(--load-mid)'
+                  : 'var(--disk)'
+            }
+          />
+        )
       }
     />
   );
