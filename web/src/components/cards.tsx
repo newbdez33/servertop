@@ -127,6 +127,28 @@ export function MemoryTile({ className, i, snapshot, history }: CardBase & TileD
   );
 }
 
+function Pie({
+  pct,
+  color,
+  size = 18,
+}: {
+  pct: number;
+  color: string;
+  size?: number;
+}) {
+  const clamped = Math.min(100, Math.max(0, pct));
+  return (
+    <span
+      className="inline-block shrink-0 rounded-full border border-line"
+      style={{
+        width: size,
+        height: size,
+        background: `conic-gradient(${color} ${clamped}%, var(--surface-2) 0)`,
+      }}
+    />
+  );
+}
+
 export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
   const disks = snapshot.disk;
   const rootDisk = disks.find(d => d.mount === '/') ?? disks[0];
@@ -168,7 +190,34 @@ export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
           'no data'
         )
       }
-      series={[]}
+      sparkSlot={
+        <span className="flex items-start gap-2">
+          {[...disks]
+            .sort((a, b) => (a.mount === '/' ? -1 : b.mount === '/' ? 1 : b.usedPct - a.usedPct))
+            .slice(0, 3)
+            .map(d => (
+              <span
+                key={d.mount}
+                className="flex flex-col items-center gap-[3px]"
+                title={`${d.mount} · ${d.usedPct.toFixed(1)}%`}
+              >
+                <Pie
+                  pct={d.usedPct}
+                  color={
+                    d.usedPct > 95
+                      ? 'var(--load-high)'
+                      : d.usedPct > 85
+                        ? 'var(--load-mid)'
+                        : 'var(--disk)'
+                  }
+                />
+                <span className="num max-w-12 truncate text-[8px] leading-none text-ink-3">
+                  {d.mount === '/' ? '/' : (d.mount.split('/').filter(Boolean).pop() ?? d.mount)}
+                </span>
+              </span>
+            ))}
+        </span>
+      }
     />
   );
 }
@@ -206,7 +255,8 @@ function Tile({
   value,
   unit,
   ctx,
-  series,
+  series = [],
+  sparkSlot,
   tooltip,
   valueColor,
   extra,
@@ -217,7 +267,8 @@ function Tile({
   value: string;
   unit: string;
   ctx: React.ReactNode;
-  series: SparkSeries[];
+  series?: SparkSeries[];
+  sparkSlot?: React.ReactNode;
   tooltip?: string;
   valueColor?: string;
   extra?: React.ReactNode;
@@ -237,7 +288,7 @@ function Tile({
           {value}
           {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
         </span>
-        <Sparkline series={series} />
+        {sparkSlot ?? <Sparkline series={series} />}
       </div>
       {extra}
       <span className="block truncate text-[10.5px] text-ink-3">{ctx}</span>
