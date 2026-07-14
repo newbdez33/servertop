@@ -148,7 +148,8 @@ All endpoints require `Authorization: Bearer <jwt>` (obtained from `/api/auth/lo
 | GET | `/api/metrics/history?range=3m\|5m\|15m\|1h` | History points |
 | GET | `/api/processes?sort=cpu\|mem&limit=10` | Top processes |
 | GET | `/api/docker` | Containers |
-| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers, data}` pushes |
+| GET | `/api/claude` | Claude Code sessions |
+| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers\|claude, data}` pushes |
 
 ## Development
 
