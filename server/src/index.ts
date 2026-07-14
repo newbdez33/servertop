@@ -11,6 +11,10 @@ import { createRouter } from './routes.js';
 import { HistoryStore } from './store.js';
 import type { MetricsSnapshot, WsMessage } from '../../shared/types.js';
 
+// Under launchd/docker there is often no locale, and macOS `ps` then
+// escapes non-ASCII process names as M-xx sequences
+process.env.LANG ??= 'en_US.UTF-8';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webDist =
   [

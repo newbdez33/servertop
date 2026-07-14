@@ -227,8 +227,9 @@ export class Collector extends EventEmitter {
   private async sampleProcesses(): Promise<void> {
     const data = await si.processes();
     const byCpu = [...data.list].sort((a, b) => b.cpu - a.cpu).slice(0, 12);
-    const byMem = [...data.list].sort((a, b) => b.mem - a.mem).slice(0, 12);
-    const memTotal = this.system?.memTotal ?? 0;
+    // memRss (KiB) is exact; mem% only has one decimal of precision, which
+    // quantizes to ~0.5 GB steps on large-memory machines
+    const byMem = [...data.list].sort((a, b) => b.memRss - a.memRss).slice(0, 12);
     const seen = new Set<number>();
     const merged: ProcessInfo[] = [];
     for (const p of [...byCpu, ...byMem]) {
@@ -239,7 +240,7 @@ export class Collector extends EventEmitter {
         name: p.name,
         user: p.user || '',
         cpu: round1(p.cpu),
-        memBytes: Math.round((p.mem / 100) * memTotal),
+        memBytes: (p.memRss ?? 0) * 1024,
       });
     }
     this.processes = merged;
