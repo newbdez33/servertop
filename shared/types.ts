@@ -107,7 +107,8 @@ export type CardId =
   | 'processes'
   | 'docker'
   | 'claude'
-  | 'codex';
+  | 'codex'
+  | 'llm';
 
 export interface LayoutCardSpec {
   id: CardId;
@@ -168,9 +169,34 @@ export interface AgentSessionsInfo {
   };
 }
 
+/** One OpenAI-compatible LLM server (llama.cpp, vLLM, custom) probed by the agent */
+export interface LlmServer {
+  name: string;
+  /** Base URL without the API key */
+  url: string;
+  up: boolean;
+  /** /v1/models round-trip, ms */
+  latencyMs: number | null;
+  model: string | null;
+  contextLength: number | null;
+  /** Local listening process, when resolvable */
+  pid: number | null;
+  cpuPct: number | null;
+  memBytes: number | null;
+  /** Vanilla llama.cpp /slots, when exposed */
+  slotsTotal: number | null;
+  slotsBusy: number | null;
+}
+
+export interface LlmInfo {
+  available: boolean;
+  servers: LlmServer[];
+}
+
 export type WsMessage =
   | { type: 'metrics'; data: MetricsSnapshot }
   | { type: 'processes'; data: ProcessInfo[] }
   | { type: 'containers'; data: ContainerInfo[] }
   | { type: 'claude'; data: AgentSessionsInfo }
-  | { type: 'codex'; data: AgentSessionsInfo };
+  | { type: 'codex'; data: AgentSessionsInfo }
+  | { type: 'llm'; data: LlmInfo };

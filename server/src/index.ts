@@ -149,6 +149,7 @@ async function main(): Promise<void> {
     send(ws, { type: 'containers', data: collector.containers });
     if (collector.claude) send(ws, { type: 'claude', data: collector.claude });
     if (collector.codex) send(ws, { type: 'codex', data: collector.codex });
+    if (collector.llm) send(ws, { type: 'llm', data: collector.llm });
   });
 
   collector.on('metrics', data => broadcast({ type: 'metrics', data }));
@@ -156,6 +157,7 @@ async function main(): Promise<void> {
   collector.on('containers', data => broadcast({ type: 'containers', data }));
   collector.on('claude', data => broadcast({ type: 'claude', data }));
   collector.on('codex', data => broadcast({ type: 'codex', data }));
+  collector.on('llm', data => broadcast({ type: 'llm', data }));
 
   const heartbeat = setInterval(() => {
     for (const ws of clients) {

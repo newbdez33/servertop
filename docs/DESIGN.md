@@ -304,6 +304,10 @@ docker compose logs -f servertop  # 查看日志
   增量解析（按 mtime+size 缓存；Claude 分块流式找标题：压缩摘要 > 首条有效 prompt >
   assistant 首句；Codex 用子串预过滤跳过 function_call 噪音行），60s 周期 + WS 推送；
   mtime 5 分钟内标记为 running；首次扫描延迟 1s 不阻塞启动
+- **LLM 服务卡**（卡片 id `llm`，不在默认布局中）：`llm.json`（模板 `llm.example.json`）
+  配置若干 OpenAI 兼容端点，15s 探测 `/v1/models`（存活/延迟/模型/上下文），原版
+  llama.cpp 追加 `/slots` 忙闲（自动探测能力并记忆），本机端口经 `lsof` 关联服务进程
+  取 CPU/内存（无 lsof 时优雅降级）
 - **访问方式**：两种部署模式
   1. **同源模式**（默认）：容器同时托管前后端，内网/VPN 纯 HTTP 直连
   2. **分离模式**：前端托管在 GitHub Pages，后端经 Caddy（DNS-01 签发 Let's Encrypt

@@ -15,6 +15,7 @@ const CARD_IDS = new Set<CardId>([
   'docker',
   'claude',
   'codex',
+  'llm',
 ]);
 
 /**

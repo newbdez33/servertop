@@ -60,5 +60,9 @@ export function createRouter(collector: Collector, history: HistoryStore): Route
     res.json(collector.codex ?? emptyAgents);
   });
 
+  r.get('/llm', (_req, res) => {
+    res.json(collector.llm ?? { available: false, servers: [] });
+  });
+
   return r;
 }

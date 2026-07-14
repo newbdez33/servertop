@@ -7,8 +7,10 @@ import { ClaudeScanner } from './claude.js';
 import { CodexScanner } from './codex.js';
 import { config } from './config.js';
 import { loadLayout } from './layout.js';
+import { LlmProber, loadLlmConfig } from './llm.js';
 import type {
   AgentSessionsInfo,
+  LlmInfo,
   ContainerInfo,
   DiskMetrics,
   MetricsSnapshot,
@@ -101,9 +103,11 @@ export class Collector extends EventEmitter {
   system: SystemInfo | null = null;
   claude: AgentSessionsInfo | null = null;
   codex: AgentSessionsInfo | null = null;
+  llm: LlmInfo | null = null;
 
   private claudeScanner = new ClaudeScanner(config.claudeDir);
   private codexScanner = new CodexScanner(config.codexDir);
+  private llmProber = new LlmProber(loadLlmConfig(config.llmFile));
 
   private disks: DiskMetrics[] = [];
   private tempC: number | null = null;
@@ -121,7 +125,10 @@ export class Collector extends EventEmitter {
     ]);
     // Agent-session scans can touch hundreds of files on first run —
     // defer them off the startup path
-    setTimeout(() => this.sampleAgents(), 1_000);
+    setTimeout(() => {
+      this.sampleAgents();
+      void this.sampleLlm();
+    }, 1_000);
 
     this.timers = [
       setInterval(() => void this.sampleFast().catch(logErr), config.sampleIntervalMs),
@@ -129,6 +136,7 @@ export class Collector extends EventEmitter {
       setInterval(() => void this.sampleContainers().catch(logErr), 5_000),
       setInterval(() => void this.sampleSlow().catch(logErr), 10_000),
       setInterval(() => this.sampleAgents(), 60_000),
+      setInterval(() => void this.sampleLlm(), 15_000),
     ];
   }
 
@@ -287,6 +295,19 @@ export class Collector extends EventEmitter {
       this.codex = info;
       this.emit('codex', info);
     });
+  }
+
+  private async sampleLlm(): Promise<void> {
+    if (!this.llmProber.available) return;
+    try {
+      const info = await this.llmProber.probe();
+      if (JSON.stringify(info) !== JSON.stringify(this.llm)) {
+        this.llm = info;
+        this.emit('llm', info);
+      }
+    } catch (err) {
+      logErr(err);
+    }
   }
 
   private async sampleSlow(): Promise<void> {

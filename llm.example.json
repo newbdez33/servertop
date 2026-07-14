@@ -1,0 +1,7 @@
+{
+  "$comment": "ServerTop LLM servers — copy to llm.json next to the app (Docker: mount as /app/llm.json) and restart. Each entry is an OpenAI-compatible endpoint (llama.cpp, vLLM, Ollama, custom). Probed every 15s: /v1/models gives up/latency/model/context; vanilla llama.cpp also reports busy slots via /slots; local servers get process CPU/memory via their listening port (needs lsof).",
+  "servers": [
+    { "name": "DeepSeek V4 Flash", "url": "http://127.0.0.1:8000" },
+    { "name": "MiniMax M2.5", "url": "http://127.0.0.1:11434", "apiKey": "your-api-key" }
+  ]
+}

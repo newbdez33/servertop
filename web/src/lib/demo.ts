@@ -1,5 +1,6 @@
 import type {
   AgentSessionsInfo,
+  LlmInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -44,6 +45,7 @@ export interface Demo {
   containers: () => ContainerInfo[];
   claude: () => AgentSessionsInfo;
   codex: () => AgentSessionsInfo;
+  llm: () => LlmInfo;
 }
 
 export function createDemo(): Demo {
@@ -74,6 +76,7 @@ export function createDemo(): Demo {
         ...DEFAULT_LAYOUT,
         { id: 'claude', span: 6, limit: 4 },
         { id: 'codex', span: 6, limit: 4 },
+        { id: 'llm', span: 12 },
       ],
     },
   };
@@ -184,6 +187,37 @@ export function createDemo(): Demo {
       ),
     claude: () => agentInfo(claudeSessions),
     codex: () => agentInfo(codexSessions),
+    llm: () => ({
+      available: true,
+      servers: [
+        {
+          name: 'DeepSeek V4 Flash',
+          url: 'http://127.0.0.1:8000',
+          up: true,
+          latencyMs: 2,
+          model: 'deepseek-v4-flash',
+          contextLength: 1_000_000,
+          pid: 9147,
+          cpuPct: round1(clamp(320 + (Math.random() - 0.5) * 200, 0, 3200)),
+          memBytes: 153.4 * GB,
+          slotsTotal: null,
+          slotsBusy: null,
+        },
+        {
+          name: 'MiniMax M2.5',
+          url: 'http://127.0.0.1:11434',
+          up: true,
+          latencyMs: 4,
+          model: 'frob/minimax-m2.5',
+          contextLength: 32_768,
+          pid: 9148,
+          cpuPct: 0.2,
+          memBytes: 134.7 * GB,
+          slotsTotal: 4,
+          slotsBusy: 1,
+        },
+      ],
+    }),
   };
 }
 

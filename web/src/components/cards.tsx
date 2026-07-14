@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type {
   AgentSessionsInfo,
+  LlmInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -13,6 +14,7 @@ import {
   ActivityIcon,
   BoxIcon,
   CpuIcon,
+  ZapIcon,
   DiskIcon,
   InfoIcon,
   MemIcon,
@@ -717,6 +719,99 @@ export function AgentSessionsCard({
                 <Td right> </Td>
               </tr>
             )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+/* ── LLM servers ────────────────────────────────────────────────────── */
+
+const fmtCtx = (v: number | null): string => {
+  if (v === null) return '—';
+  if (v >= 1_000_000) return `${+(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1024) return `${Math.round(v / 1024)}K`;
+  return String(v);
+};
+
+export function LlmCard({
+  className,
+  i,
+  llm,
+  limit = 6,
+}: CardBase & { llm: LlmInfo | null; limit?: number }) {
+  if (!llm?.available) return null;
+  const rows = llm.servers.slice(0, limit);
+  const upCount = llm.servers.filter(s => s.up).length;
+  const busy = llm.servers.reduce((n, s) => n + (s.slotsBusy ?? 0), 0);
+  return (
+    <Card i={i} className={className}>
+      <CardHead
+        title="LLM Servers"
+        icon={<ZapIcon color="var(--accent)" />}
+        sub={`${upCount}/${llm.servers.length} up`}
+        right={
+          busy > 0 ? (
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
+              <Dot tone="good" />
+              {busy} generating
+            </span>
+          ) : undefined
+        }
+      />
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[11.5px]">
+          <thead>
+            <tr>
+              <Th>Server</Th>
+              <Th>Model</Th>
+              <Th right>Ctx</Th>
+              <Th right>Slots</Th>
+              <Th right>Ping</Th>
+              <Th right>CPU</Th>
+              <Th right>Mem</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(s => (
+              <tr key={s.url} className="hover:bg-surface-2">
+                <Td className="font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Dot tone={s.up ? 'good' : 'crit'} />
+                    <span className="block max-w-[9rem] truncate" title={s.url}>
+                      {s.name}
+                    </span>
+                  </span>
+                </Td>
+                <Td className="num text-ink-3">
+                  <span className="block max-w-[10rem] truncate" title={s.model ?? undefined}>
+                    {s.model ?? (s.up ? '—' : 'down')}
+                  </span>
+                </Td>
+                <Td right className="num">
+                  {fmtCtx(s.contextLength)}
+                </Td>
+                <Td right className="num">
+                  {s.slotsTotal !== null ? `${s.slotsBusy}/${s.slotsTotal}` : '—'}
+                </Td>
+                <Td right className="num">
+                  {s.latencyMs !== null ? `${s.latencyMs}ms` : '—'}
+                </Td>
+                <Td right>
+                  {s.cpuPct !== null ? (
+                    <span className="num font-semibold" style={{ color: loadTone(s.cpuPct) }}>
+                      {s.cpuPct.toFixed(1)}%
+                    </span>
+                  ) : (
+                    <span className="num text-ink-3">—</span>
+                  )}
+                </Td>
+                <Td right className="num">
+                  {s.memBytes !== null ? fmtBytes(s.memBytes) : '—'}
+                </Td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

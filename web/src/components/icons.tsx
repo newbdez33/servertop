@@ -95,3 +95,9 @@ export const CodexIcon = (p: IconProps) => (
     <line x1="12" y1="19" x2="20" y2="19" />
   </I>
 );
+
+export const ZapIcon = (p: IconProps) => (
+  <I {...p}>
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </I>
+);

@@ -24,6 +24,9 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Claude Code & Codex sessions** — recent coding-agent sessions across
   projects with live "running" status (auto-enabled when `~/.claude` /
   `~/.codex` exist on the monitored host)
+- **LLM servers** — probe OpenAI-compatible endpoints (llama.cpp, vLLM, Ollama,
+  custom): up/down, latency, model & context, llama.cpp slot usage, and the
+  serving process's CPU/memory
 - **Configurable layout** — a server-side JSON file picks which cards show,
   their order, widths and row limits (the web UI stays read-only)
 - **Live** — 2s WebSocket push, automatic reconnect, REST polling fallback
@@ -79,6 +82,7 @@ Everything is configured through environment variables — the web UI is a pure 
 | `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
 | `CLAUDE_DIR` | `~/.claude` | Claude Code data dir for the sessions card; card auto-hides when absent. Docker: mount `~/.claude:/app/.claude:ro` and set `CLAUDE_DIR=/app/.claude` |
 | `CODEX_DIR` | `~/.codex` | Codex CLI data dir for the sessions card; same auto-hide and Docker mount pattern |
+| `LLM_FILE` | `llm.json` | Optional LLM-servers JSON (see [`llm.example.json`](llm.example.json)): `{"servers": [{"name?", "url", "apiKey?"}]}` — probed every 15s; card auto-hides when the file is absent |
 
 ### Dashboard layout (optional)
 
@@ -109,8 +113,9 @@ Example — hide the network chart and Docker card, full-width CPU chart, 10 pro
 - `limit` — max rows for the list cards (`processes`, `docker`).
 - Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
   `network-chart` `memory` `disk` `system` `processes` `docker` `claude` `codex`
-  (the agent cards are not in the default layout — add them to your `layout.json`,
-  e.g. side by side with `{"id": "claude", "span": 6}` + `{"id": "codex", "span": 6}`).
+  `llm` (the agent/LLM cards are not in the default layout — add them to your
+  `layout.json`, e.g. `{"id": "claude", "span": 6}` + `{"id": "codex", "span": 6}`
+  side by side, and `{"id": "llm", "span": 12}`).
 - Missing file → default layout; invalid entries are skipped with a server-log warning.
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).
@@ -155,7 +160,8 @@ All endpoints require `Authorization: Bearer <jwt>` (obtained from `/api/auth/lo
 | GET | `/api/docker` | Containers |
 | GET | `/api/claude` | Claude Code sessions |
 | GET | `/api/codex` | Codex sessions |
-| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers\|claude\|codex, data}` pushes |
+| GET | `/api/llm` | LLM server probes |
+| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers\|claude\|codex\|llm, data}` pushes |
 
 ## Development
 

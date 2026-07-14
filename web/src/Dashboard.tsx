@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type {
   AgentSessionsInfo,
+  LlmInfo,
   ContainerInfo,
   HistoryPoint,
   LayoutCardSpec,
@@ -11,6 +12,7 @@ import type {
 import {
   AgentSessionsCard,
   ContainerCard,
+  LlmCard,
   CpuCard,
   CpuTile,
   DiskCard,
@@ -35,6 +37,7 @@ interface CardCtx {
   containers: ContainerInfo[];
   claude: AgentSessionsInfo | null;
   codex: AgentSessionsInfo | null;
+  llm: LlmInfo | null;
   intervalMs: number;
 }
 
@@ -110,6 +113,8 @@ function renderCard(spec: LayoutCardSpec, idx: number, ctx: CardCtx): ReactNode 
           limit={spec.limit}
         />
       );
+    case 'llm':
+      return <LlmCard key={key} {...base} llm={ctx.llm} limit={spec.limit} />;
   }
 }
 
@@ -123,7 +128,7 @@ export function Dashboard({
   canLogout: boolean;
 }) {
   const { dark, toggle } = theme;
-  const { status, system, snapshot, processes, containers, claude, codex, history } =
+  const { status, system, snapshot, processes, containers, claude, codex, llm, history } =
     useLive(onAuthFailed);
   const intervalMs = system?.sampleIntervalMs ?? 2000;
   const cards = system?.layout?.cards ?? DEFAULT_LAYOUT;
@@ -150,6 +155,7 @@ export function Dashboard({
               containers,
               claude,
               codex,
+              llm,
               intervalMs,
             }),
           )

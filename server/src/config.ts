@@ -29,6 +29,8 @@ export const config = {
   claudeDir: env.CLAUDE_DIR ?? path.join(os.homedir(), '.claude'),
   /** Codex CLI data dir; sessions card auto-enables when it exists */
   codexDir: env.CODEX_DIR ?? path.join(os.homedir(), '.codex'),
+  /** Optional LLM servers JSON ({"servers": [{name?, url, apiKey?}]}) */
+  llmFile: env.LLM_FILE ?? 'llm.json',
   /** Origins allowed for cross-origin API access (e.g. a GitHub Pages frontend). Empty = same-origin only. */
   allowedOrigins: (env.ALLOWED_ORIGIN ?? '')
     .split(',')

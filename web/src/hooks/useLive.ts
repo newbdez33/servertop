@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
   AgentSessionsInfo,
+  LlmInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -24,6 +25,7 @@ export interface LiveState {
   containers: ContainerInfo[];
   claude: AgentSessionsInfo | null;
   codex: AgentSessionsInfo | null;
+  llm: LlmInfo | null;
   history: HistoryPoint[];
 }
 
@@ -40,6 +42,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
   const [containers, setContainers] = useState<ContainerInfo[]>([]);
   const [claude, setClaude] = useState<AgentSessionsInfo | null>(null);
   const [codex, setCodex] = useState<AgentSessionsInfo | null>(null);
+  const [llm, setLlm] = useState<LlmInfo | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
 
   const onAuthFailedRef = useRef(onAuthFailed);
@@ -55,6 +58,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
       setContainers(demo.containers());
       setClaude(demo.claude());
       setCodex(demo.codex());
+      setLlm(demo.llm());
       setStatus('online');
       const applyTick = (): void => {
         const m = demo.tick();
@@ -182,6 +186,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
         else if (msg.type === 'containers') setContainers(msg.data);
         else if (msg.type === 'claude') setClaude(msg.data);
         else if (msg.type === 'codex') setCodex(msg.data);
+        else if (msg.type === 'llm') setLlm(msg.data);
       };
 
       ws.onclose = () => {
@@ -210,5 +215,5 @@ export function useLive(onAuthFailed: () => void): LiveState {
     };
   }, []);
 
-  return { status, system, snapshot, processes, containers, claude, codex, history };
+  return { status, system, snapshot, processes, containers, claude, codex, llm, history };
 }
