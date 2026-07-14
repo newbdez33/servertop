@@ -698,8 +698,8 @@ export function AgentSessionsCard({
                     </span>
                   </span>
                 </Td>
-                <Td className="text-ink-2">
-                  <span className="block max-w-[18rem] truncate" title={sess.title}>
+                <Td className="w-full max-w-0 text-ink-2">
+                  <span className="block truncate" title={sess.title}>
                     {sess.title}
                   </span>
                 </Td>
@@ -784,8 +784,8 @@ export function LlmCard({
                     </span>
                   </span>
                 </Td>
-                <Td className="num text-ink-3">
-                  <span className="block max-w-[10rem] truncate" title={s.model ?? undefined}>
+                <Td className="num w-full max-w-0 text-ink-3">
+                  <span className="block truncate" title={s.model ?? undefined}>
                     {s.model ?? (s.up ? '—' : 'down')}
                   </span>
                 </Td>
