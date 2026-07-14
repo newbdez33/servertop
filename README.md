@@ -17,7 +17,7 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 
 - **CPU** — total usage history, per-core bars, load average, temperature (when available)
 - **Memory** — used / cache / free breakdown, swap
-- **Disk** — per-partition usage with 85% / 95% warning states
+- **Disk** — root-usage pie on the tile, per-partition usage with 85% / 95% warning states
 - **Network** — download/upload rate charts for the default interface
 - **Processes** — top consumers, sortable by CPU or memory
 - **Docker containers** — state, CPU, memory, uptime
@@ -110,7 +110,10 @@ Example — hide the network chart and Docker card, full-width CPU chart, 10 pro
 
 - Cards render in array order; **omitted cards are hidden**.
 - `span` — card width on large screens in a 12-column grid (phones always stack).
-- `limit` — max rows for the list cards (`processes`, `docker`).
+  Narrow cards drop secondary table columns (process user, container
+  image/uptime, LLM ctx/ping) instead of growing a scrollbar, so three-up rows
+  like `"span": 4` stay clean.
+- `limit` — max rows for the list cards (`processes`, `docker`, `claude`, `codex`).
 - Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
   `network-chart` `memory` `disk` `system` `processes` `docker` `claude` `codex`
   `llm`. The default layout is tiles + charts + processes + docker; the detail
