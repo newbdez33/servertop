@@ -48,14 +48,16 @@ export function createRouter(collector: Collector, history: HistoryStore): Route
     res.json({ available: collector.dockerAvailable, containers: collector.containers });
   });
 
+  const emptyAgents = {
+    available: false,
+    sessions: [],
+    stats: { totalSessions: 0, totalProjects: 0, sessionsToday: 0, activeNow: 0 },
+  };
   r.get('/claude', (_req, res) => {
-    res.json(
-      collector.claude ?? {
-        available: false,
-        sessions: [],
-        stats: { totalSessions: 0, totalProjects: 0, sessionsToday: 0, activeNow: 0 },
-      },
-    );
+    res.json(collector.claude ?? emptyAgents);
+  });
+  r.get('/codex', (_req, res) => {
+    res.json(collector.codex ?? emptyAgents);
   });
 
   return r;

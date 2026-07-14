@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type {
-  ClaudeInfo,
+  AgentSessionsInfo,
   ContainerInfo,
   HistoryPoint,
   LayoutCardSpec,
@@ -9,7 +9,7 @@ import type {
   SystemInfo,
 } from '../../shared/types';
 import {
-  ClaudeCard,
+  AgentSessionsCard,
   ContainerCard,
   CpuCard,
   CpuTile,
@@ -22,6 +22,7 @@ import {
   ProcessCard,
   SystemCard,
 } from './components/cards';
+import { ClaudeIcon, CodexIcon } from './components/icons';
 import { TopBar } from './components/TopBar';
 import { useLive } from './hooks/useLive';
 import { DEFAULT_LAYOUT, DEFAULT_SPAN, gridClasses } from './lib/layout';
@@ -32,7 +33,8 @@ interface CardCtx {
   system: SystemInfo | null;
   processes: ProcessInfo[];
   containers: ContainerInfo[];
-  claude: ClaudeInfo | null;
+  claude: AgentSessionsInfo | null;
+  codex: AgentSessionsInfo | null;
   intervalMs: number;
 }
 
@@ -87,7 +89,27 @@ function renderCard(spec: LayoutCardSpec, idx: number, ctx: CardCtx): ReactNode 
         />
       );
     case 'claude':
-      return <ClaudeCard key={key} {...base} claude={ctx.claude} limit={spec.limit} />;
+      return (
+        <AgentSessionsCard
+          key={key}
+          {...base}
+          title="Claude Code"
+          icon={<ClaudeIcon color="var(--claude)" />}
+          data={ctx.claude}
+          limit={spec.limit}
+        />
+      );
+    case 'codex':
+      return (
+        <AgentSessionsCard
+          key={key}
+          {...base}
+          title="Codex"
+          icon={<CodexIcon color="var(--codex)" />}
+          data={ctx.codex}
+          limit={spec.limit}
+        />
+      );
   }
 }
 
@@ -101,7 +123,8 @@ export function Dashboard({
   canLogout: boolean;
 }) {
   const { dark, toggle } = theme;
-  const { status, system, snapshot, processes, containers, claude, history } = useLive(onAuthFailed);
+  const { status, system, snapshot, processes, containers, claude, codex, history } =
+    useLive(onAuthFailed);
   const intervalMs = system?.sampleIntervalMs ?? 2000;
   const cards = system?.layout?.cards ?? DEFAULT_LAYOUT;
 
@@ -126,6 +149,7 @@ export function Dashboard({
               processes,
               containers,
               claude,
+              codex,
               intervalMs,
             }),
           )

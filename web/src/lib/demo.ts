@@ -1,5 +1,5 @@
 import type {
-  ClaudeInfo,
+  AgentSessionsInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -42,7 +42,8 @@ export interface Demo {
   tick: () => MetricsSnapshot;
   processes: () => ProcessInfo[];
   containers: () => ContainerInfo[];
-  claude: () => ClaudeInfo;
+  claude: () => AgentSessionsInfo;
+  codex: () => AgentSessionsInfo;
 }
 
 export function createDemo(): Demo {
@@ -67,8 +68,14 @@ export function createDemo(): Demo {
     dockerAvailable: true,
     agentVersion: '0.1.0',
     sampleIntervalMs: INTERVAL_MS,
-    // Demo shows everything, including the Claude Code sessions card
-    layout: { cards: [...DEFAULT_LAYOUT, { id: 'claude', limit: 4 }] },
+    // Demo shows everything, including the agent session cards
+    layout: {
+      cards: [
+        ...DEFAULT_LAYOUT,
+        { id: 'claude', span: 6, limit: 4 },
+        { id: 'codex', span: 6, limit: 4 },
+      ],
+    },
   };
 
   const disks = [
@@ -137,6 +144,12 @@ export function createDemo(): Demo {
     ['d7b8', '/home/dev/data-pipeline', 'main', 'Why does the nightly ETL job OOM on the join step?', 3 * 1440, 61, false],
   ];
 
+  const codexSessions: Array<[string, string, string, string, number, number, boolean]> = [
+    ['e9f0', '/home/dev/servertop', 'main', 'Review the WebSocket reconnect logic for race conditions', 3, 42, true],
+    ['f1a2', '/home/dev/billing', 'fix/invoice-rounding', 'Fix rounding drift in invoice line totals', 90, 118, false],
+    ['a3b4', '/home/dev/api-gateway', 'main', 'Add request tracing headers to all upstream calls', 30 * 60, 77, false],
+  ];
+
   return {
     system,
     seedHistory: () => {
@@ -169,29 +182,34 @@ export function createDemo(): Demo {
           ? { ...c, cpuPct: round1(clamp(c.cpuPct + (Math.random() - 0.5) * 2, 0.1, 99)) }
           : c,
       ),
-    claude: () => {
-      const now = Date.now();
-      const sessions = claudeSessions.map(([id, project, gitBranch, title, minAgo, turns, active]) => ({
-        id,
-        project,
-        title,
-        gitBranch,
-        startedAt: now - minAgo * 60_000 - 3_600_000,
-        lastActiveAt: now - minAgo * 60_000,
-        turns,
-        sizeBytes: turns * 40_000,
-        active,
-      }));
-      return {
-        available: true,
-        sessions,
-        stats: {
-          totalSessions: sessions.length,
-          totalProjects: 3,
-          sessionsToday: 2,
-          activeNow: 1,
-        },
-      };
+    claude: () => agentInfo(claudeSessions),
+    codex: () => agentInfo(codexSessions),
+  };
+}
+
+function agentInfo(
+  rows: Array<[string, string, string, string, number, number, boolean]>,
+): AgentSessionsInfo {
+  const now = Date.now();
+  const sessions = rows.map(([id, project, gitBranch, title, minAgo, turns, active]) => ({
+    id,
+    project,
+    title,
+    gitBranch,
+    startedAt: now - minAgo * 60_000 - 3_600_000,
+    lastActiveAt: now - minAgo * 60_000,
+    turns,
+    sizeBytes: turns * 40_000,
+    active,
+  }));
+  return {
+    available: true,
+    sessions,
+    stats: {
+      totalSessions: sessions.length,
+      totalProjects: new Set(sessions.map(s => s.project)).size,
+      sessionsToday: 2,
+      activeNow: sessions.filter(s => s.active).length,
     },
   };
 }

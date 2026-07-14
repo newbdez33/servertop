@@ -22,8 +22,9 @@
   --disk: #c8497f;
   --net-rx: #2a78d6;
   --net-tx: #eb6834;
-  /* Claude brand coral — theme-invariant, used for the Claude Code card icon */
+  /* Agent brand colors — theme-invariant, used for the session card icons */
   --claude: #d97757;
+  --codex: #10a37f;
   /* Text-safe load gradient (process CPU%, temperature) */
   --load-low: #067d06;
   --load-mid: #a66a00;

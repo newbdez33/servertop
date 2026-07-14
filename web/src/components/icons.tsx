@@ -88,3 +88,10 @@ export const ClaudeIcon = (p: IconProps) => (
     <path d="M12 3v18M5.6 5.6l12.8 12.8M3 12h18M5.6 18.4L18.4 5.6" />
   </I>
 );
+
+export const CodexIcon = (p: IconProps) => (
+  <I {...p}>
+    <polyline points="4 17 10 11 4 5" />
+    <line x1="12" y1="19" x2="20" y2="19" />
+  </I>
+);

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
-  ClaudeInfo,
+  AgentSessionsInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -22,7 +22,8 @@ export interface LiveState {
   snapshot: MetricsSnapshot | null;
   processes: ProcessInfo[];
   containers: ContainerInfo[];
-  claude: ClaudeInfo | null;
+  claude: AgentSessionsInfo | null;
+  codex: AgentSessionsInfo | null;
   history: HistoryPoint[];
 }
 
@@ -37,7 +38,8 @@ export function useLive(onAuthFailed: () => void): LiveState {
   const [snapshot, setSnapshot] = useState<MetricsSnapshot | null>(null);
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [containers, setContainers] = useState<ContainerInfo[]>([]);
-  const [claude, setClaude] = useState<ClaudeInfo | null>(null);
+  const [claude, setClaude] = useState<AgentSessionsInfo | null>(null);
+  const [codex, setCodex] = useState<AgentSessionsInfo | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
 
   const onAuthFailedRef = useRef(onAuthFailed);
@@ -52,6 +54,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
       setProcesses(demo.processes());
       setContainers(demo.containers());
       setClaude(demo.claude());
+      setCodex(demo.codex());
       setStatus('online');
       const applyTick = (): void => {
         const m = demo.tick();
@@ -178,6 +181,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
         else if (msg.type === 'processes') setProcesses(msg.data);
         else if (msg.type === 'containers') setContainers(msg.data);
         else if (msg.type === 'claude') setClaude(msg.data);
+        else if (msg.type === 'codex') setCodex(msg.data);
       };
 
       ws.onclose = () => {
@@ -206,5 +210,5 @@ export function useLive(onAuthFailed: () => void): LiveState {
     };
   }, []);
 
-  return { status, system, snapshot, processes, containers, claude, history };
+  return { status, system, snapshot, processes, containers, claude, codex, history };
 }

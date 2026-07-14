@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type {
-  ClaudeInfo,
+  AgentSessionsInfo,
   ContainerInfo,
   HistoryPoint,
   MetricsSnapshot,
@@ -12,7 +12,6 @@ import { fmtAgo, fmtBytes, fmtGB, fmtGBdec, fmtRate, fmtUptime, niceMax, toMBs }
 import {
   ActivityIcon,
   BoxIcon,
-  ClaudeIcon,
   CpuIcon,
   DiskIcon,
   InfoIcon,
@@ -642,20 +641,27 @@ export function ContainerCard({
 
 const basename = (p: string): string => p.split('/').filter(Boolean).pop() ?? p;
 
-export function ClaudeCard({
+export function AgentSessionsCard({
   className,
   i,
-  claude,
+  title,
+  icon,
+  data,
   limit = 6,
-}: CardBase & { claude: ClaudeInfo | null; limit?: number }) {
-  if (!claude?.available) return null;
-  const { stats } = claude;
-  const rows = claude.sessions.slice(0, limit);
+}: CardBase & {
+  title: string;
+  icon: React.ReactNode;
+  data: AgentSessionsInfo | null;
+  limit?: number;
+}) {
+  if (!data?.available) return null;
+  const { stats } = data;
+  const rows = data.sessions.slice(0, limit);
   return (
     <Card i={i} className={className}>
       <CardHead
-        title="Claude Code"
-        icon={<ClaudeIcon color="var(--claude)" />}
+        title={title}
+        icon={icon}
         sub={`${stats.sessionsToday} today · ${stats.totalSessions} sessions in ${stats.totalProjects} projects`}
         right={
           stats.activeNow > 0 ? (

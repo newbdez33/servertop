@@ -27,6 +27,8 @@ export const config = {
   layoutFile: env.LAYOUT_FILE ?? 'layout.json',
   /** Claude Code data dir; sessions card auto-enables when it exists */
   claudeDir: env.CLAUDE_DIR ?? path.join(os.homedir(), '.claude'),
+  /** Codex CLI data dir; sessions card auto-enables when it exists */
+  codexDir: env.CODEX_DIR ?? path.join(os.homedir(), '.codex'),
   /** Origins allowed for cross-origin API access (e.g. a GitHub Pages frontend). Empty = same-origin only. */
   allowedOrigins: (env.ALLOWED_ORIGIN ?? '')
     .split(',')

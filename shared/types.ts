@@ -106,7 +106,8 @@ export type CardId =
   | 'system'
   | 'processes'
   | 'docker'
-  | 'claude';
+  | 'claude'
+  | 'codex';
 
 export interface LayoutCardSpec {
   id: CardId;
@@ -137,8 +138,8 @@ export interface SystemInfo {
   layout: DashboardLayout | null;
 }
 
-/** One Claude Code session (parsed from ~/.claude/projects JSONL transcripts) */
-export interface ClaudeSession {
+/** One coding-agent session (Claude Code / Codex), parsed from local JSONL transcripts */
+export interface AgentSession {
   id: string;
   /** Project working directory (from the transcript's cwd field) */
   project: string;
@@ -155,10 +156,10 @@ export interface ClaudeSession {
   active: boolean;
 }
 
-export interface ClaudeInfo {
+export interface AgentSessionsInfo {
   available: boolean;
   /** Most recent first, capped server-side */
-  sessions: ClaudeSession[];
+  sessions: AgentSession[];
   stats: {
     totalSessions: number;
     totalProjects: number;
@@ -171,4 +172,5 @@ export type WsMessage =
   | { type: 'metrics'; data: MetricsSnapshot }
   | { type: 'processes'; data: ProcessInfo[] }
   | { type: 'containers'; data: ContainerInfo[] }
-  | { type: 'claude'; data: ClaudeInfo };
+  | { type: 'claude'; data: AgentSessionsInfo }
+  | { type: 'codex'; data: AgentSessionsInfo };

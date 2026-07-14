@@ -21,8 +21,9 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Network** — download/upload rate charts for the default interface
 - **Processes** — top consumers, sortable by CPU or memory
 - **Docker containers** — state, CPU, memory, uptime
-- **Claude Code sessions** — recent sessions across projects with live "running"
-  status (auto-enabled when `~/.claude` exists on the monitored host)
+- **Claude Code & Codex sessions** — recent coding-agent sessions across
+  projects with live "running" status (auto-enabled when `~/.claude` /
+  `~/.codex` exist on the monitored host)
 - **Configurable layout** — a server-side JSON file picks which cards show,
   their order, widths and row limits (the web UI stays read-only)
 - **Live** — 2s WebSocket push, automatic reconnect, REST polling fallback
@@ -77,6 +78,7 @@ Everything is configured through environment variables — the web UI is a pure 
 | `ALLOWED_ORIGIN` | *(unset)* | Comma-separated origins allowed for cross-origin API access (e.g. `https://newbdez33.github.io` for the Pages-hosted frontend). Unset = same-origin only. |
 | `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
 | `CLAUDE_DIR` | `~/.claude` | Claude Code data dir for the sessions card; card auto-hides when absent. Docker: mount `~/.claude:/app/.claude:ro` and set `CLAUDE_DIR=/app/.claude` |
+| `CODEX_DIR` | `~/.codex` | Codex CLI data dir for the sessions card; same auto-hide and Docker mount pattern |
 
 ### Dashboard layout (optional)
 
@@ -106,8 +108,9 @@ Example — hide the network chart and Docker card, full-width CPU chart, 10 pro
 - `span` — card width on large screens in a 12-column grid (phones always stack).
 - `limit` — max rows for the list cards (`processes`, `docker`).
 - Card ids: `cpu-tile` `memory-tile` `disk-tile` `network-tile` `cpu-chart`
-  `network-chart` `memory` `disk` `system` `processes` `docker` `claude`
-  (`claude` is not in the default layout — add it to your `layout.json`).
+  `network-chart` `memory` `disk` `system` `processes` `docker` `claude` `codex`
+  (the agent cards are not in the default layout — add them to your `layout.json`,
+  e.g. side by side with `{"id": "claude", "span": 6}` + `{"id": "codex", "span": 6}`).
 - Missing file → default layout; invalid entries are skipped with a server-log warning.
 
 **Network exposure:** ServerTop is designed for intranet/VPN use over plain HTTP. If you must expose it publicly, put a TLS-terminating reverse proxy in front (remember to forward WebSocket `Upgrade` headers).
@@ -151,7 +154,8 @@ All endpoints require `Authorization: Bearer <jwt>` (obtained from `/api/auth/lo
 | GET | `/api/processes?sort=cpu\|mem&limit=10` | Top processes |
 | GET | `/api/docker` | Containers |
 | GET | `/api/claude` | Claude Code sessions |
-| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers\|claude, data}` pushes |
+| GET | `/api/codex` | Codex sessions |
+| WS | `/ws?token=<jwt>` | `{type: metrics\|processes\|containers\|claude\|codex, data}` pushes |
 
 ## Development
 

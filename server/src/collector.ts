@@ -4,10 +4,11 @@ import os from 'node:os';
 import si from 'systeminformation';
 import type { Systeminformation } from 'systeminformation';
 import { ClaudeScanner } from './claude.js';
+import { CodexScanner } from './codex.js';
 import { config } from './config.js';
 import { loadLayout } from './layout.js';
 import type {
-  ClaudeInfo,
+  AgentSessionsInfo,
   ContainerInfo,
   DiskMetrics,
   MetricsSnapshot,
@@ -98,9 +99,11 @@ export class Collector extends EventEmitter {
   containers: ContainerInfo[] = [];
   dockerAvailable = false;
   system: SystemInfo | null = null;
-  claude: ClaudeInfo | null = null;
+  claude: AgentSessionsInfo | null = null;
+  codex: AgentSessionsInfo | null = null;
 
   private claudeScanner = new ClaudeScanner(config.claudeDir);
+  private codexScanner = new CodexScanner(config.codexDir);
 
   private disks: DiskMetrics[] = [];
   private tempC: number | null = null;
@@ -116,14 +119,16 @@ export class Collector extends EventEmitter {
       this.sampleProcesses().catch(logErr),
       this.sampleContainers().catch(logErr),
     ]);
-    this.sampleClaude();
+    // Agent-session scans can touch hundreds of files on first run —
+    // defer them off the startup path
+    setTimeout(() => this.sampleAgents(), 1_000);
 
     this.timers = [
       setInterval(() => void this.sampleFast().catch(logErr), config.sampleIntervalMs),
       setInterval(() => void this.sampleProcesses().catch(logErr), 5_000),
       setInterval(() => void this.sampleContainers().catch(logErr), 5_000),
       setInterval(() => void this.sampleSlow().catch(logErr), 10_000),
-      setInterval(() => this.sampleClaude(), 60_000),
+      setInterval(() => this.sampleAgents(), 60_000),
     ];
   }
 
@@ -259,18 +264,29 @@ export class Collector extends EventEmitter {
     }
   }
 
-  private sampleClaude(): void {
-    if (!this.claudeScanner.available) return;
-    try {
-      const info = this.claudeScanner.scan();
-      // Broadcast only when something changed — scans are cheap, pushes aren't free
-      if (JSON.stringify(info) !== JSON.stringify(this.claude)) {
-        this.claude = info;
-        this.emit('claude', info);
+  private sampleAgents(): void {
+    const run = (
+      scanner: { available: boolean; scan: () => AgentSessionsInfo },
+      current: AgentSessionsInfo | null,
+      apply: (info: AgentSessionsInfo) => void,
+    ): void => {
+      if (!scanner.available) return;
+      try {
+        const info = scanner.scan();
+        // Broadcast only when something changed — scans are cheap, pushes aren't free
+        if (JSON.stringify(info) !== JSON.stringify(current)) apply(info);
+      } catch (err) {
+        logErr(err);
       }
-    } catch (err) {
-      logErr(err);
-    }
+    };
+    run(this.claudeScanner, this.claude, info => {
+      this.claude = info;
+      this.emit('claude', info);
+    });
+    run(this.codexScanner, this.codex, info => {
+      this.codex = info;
+      this.emit('codex', info);
+    });
   }
 
   private async sampleSlow(): Promise<void> {

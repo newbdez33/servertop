@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { ClaudeInfo, ClaudeSession } from '../../shared/types.js';
+import type { AgentSession, AgentSessionsInfo } from '../../shared/types.js';
 
 const CHUNK_BYTES = 256 * 1024;
 const SCAN_CAP_BYTES = 4 * 1024 * 1024; // forward-scan budget to find a meaningful title
@@ -23,14 +23,14 @@ interface CacheEntry {
   meta: ParsedMeta;
 }
 
-function readChunk(fd: number, position: number, length: number): Buffer {
+export function readChunk(fd: number, position: number, length: number): Buffer {
   const buf = Buffer.alloc(length);
   const read = fs.readSync(fd, buf, 0, length, position);
   return read === length ? buf : buf.subarray(0, read);
 }
 
 /** Extract plain text from a Claude message content (string or content-block array) */
-function contentText(content: unknown): string {
+export function contentText(content: unknown): string {
   if (typeof content === 'string') return content;
   if (Array.isArray(content)) {
     for (const block of content) {
@@ -155,15 +155,15 @@ export class ClaudeScanner {
     this.available = fs.existsSync(this.projectsDir);
   }
 
-  scan(): ClaudeInfo {
-    const empty: ClaudeInfo = {
+  scan(): AgentSessionsInfo {
+    const empty: AgentSessionsInfo = {
       available: false,
       sessions: [],
       stats: { totalSessions: 0, totalProjects: 0, sessionsToday: 0, activeNow: 0 },
     };
     if (!this.available) return empty;
 
-    const sessions: ClaudeSession[] = [];
+    const sessions: AgentSession[] = [];
     const projects = new Set<string>();
     const seen = new Set<string>();
     try {
