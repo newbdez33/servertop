@@ -19,7 +19,7 @@ import {
   MemIcon,
   NetIcon,
 } from './icons';
-import { Sparkline } from './Sparkline';
+import { Sparkline, type SparkSeries } from './Sparkline';
 import { TimeChart } from './TimeChart';
 import { BarRow, Card, CardHead, Dot, Swatch } from './ui';
 
@@ -70,8 +70,7 @@ export function CpuTile({ className, i, snapshot, history }: CardBase & TileData
           <span className="num">{cpu.load[0].toFixed(2)}</span>
         </>
       }
-      values={spark(history, h => h.cpu)}
-      color="var(--cpu)"
+      series={[{ values: spark(history, h => h.cpu), color: 'var(--cpu)' }]}
     />
   );
 }
@@ -93,8 +92,7 @@ export function MemoryTile({ className, i, snapshot, history }: CardBase & TileD
           <span className="num">{fmtGB(mem.total)}</span> GB used
         </>
       }
-      values={spark(history, h => h.mem)}
-      color="var(--mem)"
+      series={[{ values: spark(history, h => h.mem), color: 'var(--mem)' }]}
     />
   );
 }
@@ -119,8 +117,7 @@ export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
           'no data'
         )
       }
-      values={[]}
-      color="var(--disk)"
+      series={[]}
     />
   );
 }
@@ -142,8 +139,10 @@ export function NetworkTile({ className, i, snapshot, history }: CardBase & Tile
           {primary ? ` · ${primary.iface}` : ''}
         </>
       }
-      values={spark(history, h => toMBs(h.rx))}
-      color="var(--net-rx)"
+      series={[
+        { values: spark(history, h => toMBs(h.rx)), color: 'var(--net-rx)' },
+        { values: spark(history, h => toMBs(h.tx)), color: 'var(--net-tx)' },
+      ]}
     />
   );
 }
@@ -156,8 +155,7 @@ function Tile({
   value,
   unit,
   ctx,
-  values,
-  color,
+  series,
   small = false,
 }: CardBase & {
   label: string;
@@ -165,8 +163,7 @@ function Tile({
   value: string;
   unit: string;
   ctx: React.ReactNode;
-  values: number[];
-  color: string;
+  series: SparkSeries[];
   small?: boolean;
 }) {
   return (
@@ -182,7 +179,7 @@ function Tile({
           {value}
           {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
         </span>
-        <Sparkline values={values} color={color} />
+        <Sparkline series={series} />
       </div>
       <span className="text-[10.5px] text-ink-3">{ctx}</span>
     </Card>
