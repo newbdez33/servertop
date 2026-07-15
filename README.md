@@ -6,6 +6,11 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 
 ![Dashboard (dark)](docs/screenshots/dashboard-dark.png)
 
+<p align="center">
+  <img src="docs/screenshots/detail-tiles.png" width="652" alt="Disk and network tiles at actual size"><br>
+  <img src="docs/screenshots/detail-agents.png" width="652" alt="Claude Code sessions card at actual size">
+</p>
+
 <details>
 <summary>Light theme</summary>
 
