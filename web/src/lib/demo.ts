@@ -7,8 +7,6 @@ import type {
   ProcessInfo,
   SystemInfo,
 } from '../../../shared/types';
-import { DEFAULT_LAYOUT } from './layout';
-
 /**
  * Demo mode: simulated data, no backend. Activated at runtime with ?demo
  * (e.g. the GitHub Pages link) or at build time with VITE_DEMO=1.
@@ -73,10 +71,15 @@ export function createDemo(): Demo {
     // Demo shows everything, including the agent session cards
     layout: {
       cards: [
-        ...DEFAULT_LAYOUT,
-        { id: 'claude', span: 6, limit: 4 },
-        { id: 'codex', span: 6, limit: 4 },
-        { id: 'llm', span: 12 },
+        { id: 'cpu-tile', span: 2 },
+        { id: 'memory-tile', span: 2 },
+        { id: 'disk-tile', span: 2 },
+        { id: 'network-tile', span: 2 },
+        { id: 'llm', span: 4 },
+        { id: 'claude', span: 6, limit: 8 },
+        { id: 'codex', span: 6, limit: 8 },
+        { id: 'processes', span: 6, limit: 10 },
+        { id: 'docker', span: 6, limit: 8 },
       ],
     },
   };
@@ -94,8 +97,10 @@ export function createDemo(): Demo {
     [981, 'redis-server', 'redis', 4.3, 210 * MB],
     [743, 'nginx', 'www-data', 3.2, 64 * MB],
     [655, 'dockerd', 'root', 2.6, 148 * MB],
+    [1233, 'prometheus', 'prometheus', 1.9, 310 * MB],
     [2201, 'servertop', 'app', 1.4, 58 * MB],
     [412, 'systemd-journald', 'root', 0.8, 32 * MB],
+    [2450, 'fail2ban-server', 'root', 0.4, 28 * MB],
     [890, 'sshd', 'root', 0.2, 12 * MB],
   ];
 
@@ -143,14 +148,23 @@ export function createDemo(): Demo {
   const claudeSessions: Array<[string, string, string, string, number, number, boolean]> = [
     ['a1e2', '/home/dev/servertop', 'main', 'Add per-metric domain colors to the dashboard', 1, 342, true],
     ['b3f4', '/home/dev/api-gateway', 'feat/rate-limit', 'Implement sliding-window rate limiting for the public API', 240, 187, false],
+    ['e1c2', '/home/dev/servertop', 'main', 'Render the disk pie as SVG for proper anti-aliasing', 55, 38, false],
+    ['f3d4', '/home/dev/infra', 'main', 'Write a Caddy overlay for DNS-01 TLS on the intranet', 5 * 60, 143, false],
     ['c5a6', '/home/dev/servertop', 'main', 'Fix horizontal scroll in the Docker containers card', 2 * 1440, 96, false],
+    ['a5e6', '/home/dev/mobile-app', 'fix/push-badge', 'Debug duplicate push notification badges on iOS', 26 * 60, 52, false],
     ['d7b8', '/home/dev/data-pipeline', 'main', 'Why does the nightly ETL job OOM on the join step?', 3 * 1440, 61, false],
+    ['b7f8', '/home/dev/data-pipeline', 'main', 'Backfill the metrics table for March without downtime', 4 * 1440, 210, false],
   ];
 
   const codexSessions: Array<[string, string, string, string, number, number, boolean]> = [
     ['e9f0', '/home/dev/servertop', 'main', 'Review the WebSocket reconnect logic for race conditions', 3, 42, true],
     ['f1a2', '/home/dev/billing', 'fix/invoice-rounding', 'Fix rounding drift in invoice line totals', 90, 118, false],
+    ['b5c6', '/home/dev/billing', 'main', 'Add property-based tests for the proration calculator', 4 * 60, 55, false],
+    ['c7d8', '/home/dev/infra', 'main', 'Terraform plan drift — why is the ASG being replaced?', 9 * 60, 31, false],
     ['a3b4', '/home/dev/api-gateway', 'main', 'Add request tracing headers to all upstream calls', 30 * 60, 77, false],
+    ['d9e0', '/home/dev/mobile-app', 'main', 'Profile the cold-start time regression in 2.14', 2 * 1440, 64, false],
+    ['e1f2', '/home/dev/api-gateway', 'feat/grpc', 'Sketch a gRPC transcoding layer for the v2 endpoints', 5 * 1440, 89, false],
+    ['f3a4', '/home/dev/servertop', 'main', 'Tighten the JWT clock-skew handling', 6 * 1440, 23, false],
   ];
 
   return {
