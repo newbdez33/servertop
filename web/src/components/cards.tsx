@@ -870,14 +870,20 @@ export function LlmCard({
       <CardHead
         title="LLM Servers"
         icon={<ZapIcon color="var(--accent)" />}
-        sub={`${upCount}/${llm.servers.length} up`}
         right={
-          busy > 0 ? (
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
-              <Dot tone="good" />
-              {busy} generating
+          <span className="flex items-center gap-2">
+            {busy > 0 && (
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
+                <Dot tone="good" />
+                {busy} generating
+              </span>
+            )}
+            <span
+              className={`num text-[10.5px] ${upCount === llm.servers.length ? 'text-ink-3' : 'font-semibold text-crit'}`}
+            >
+              {upCount}/{llm.servers.length} up
             </span>
-          ) : undefined
+          </span>
         }
       />
       <div className="overflow-x-auto">
