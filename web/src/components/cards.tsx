@@ -547,15 +547,19 @@ export function ProcessCard({
       <CardHead
         title="Processes"
         icon={<ActivityIcon color="var(--cpu)" />}
-        sub={`Top ${limit} by ${sort === 'cpu' ? 'CPU' : 'memory'}`}
         right={
-          <button
-            onClick={() => setSort(s => (s === 'cpu' ? 'mem' : 'cpu'))}
-            className="cursor-pointer rounded-[7px] border border-line bg-surface px-2 py-1 text-[11px] font-medium text-ink-2 hover:bg-surface-2"
-            title="Toggle sort: CPU / memory"
-          >
-            {sort === 'cpu' ? 'CPU' : 'Mem'} ▾
-          </button>
+          <span className="flex items-center gap-2">
+            <span className="num text-[10.5px] text-ink-3">
+              Top {limit} by {sort === 'cpu' ? 'CPU' : 'memory'}
+            </span>
+            <button
+              onClick={() => setSort(s => (s === 'cpu' ? 'mem' : 'cpu'))}
+              className="cursor-pointer rounded-[7px] border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-ink-2 hover:bg-surface-2"
+              title="Toggle sort: CPU / memory"
+            >
+              {sort === 'cpu' ? 'CPU' : 'Mem'} ▾
+            </button>
+          </span>
         }
       />
       <div className="overflow-x-auto">
@@ -674,10 +678,13 @@ export function ContainerCard({
       <CardHead
         title="Docker Containers"
         icon={<BoxIcon color="var(--net-rx)" />}
-        sub={
-          available
-            ? `${containers.length} container${containers.length === 1 ? '' : 's'} · ${running} running`
-            : undefined
+        right={
+          available ? (
+            <span className="num text-[10.5px] text-ink-3">
+              {containers.length} container{containers.length === 1 ? '' : 's'} · {running}{' '}
+              running
+            </span>
+          ) : undefined
         }
       />
       {!available ? (
