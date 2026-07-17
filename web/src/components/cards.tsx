@@ -784,14 +784,19 @@ export function AgentSessionsCard({
       <CardHead
         title={title}
         icon={icon}
-        sub={`${stats.sessionsToday} today · ${stats.totalSessions} sessions in ${stats.totalProjects} projects`}
         right={
-          stats.activeNow > 0 ? (
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
-              <Dot tone="good" />
-              {stats.activeNow} running
+          <span className="flex items-center gap-2">
+            {stats.activeNow > 0 && (
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-good">
+                <Dot tone="good" />
+                {stats.activeNow} running
+              </span>
+            )}
+            <span className="num text-[10.5px] text-ink-3">
+              {stats.sessionsToday} today · {stats.totalSessions} sessions in{' '}
+              {stats.totalProjects} projects
             </span>
-          ) : undefined
+          </span>
         }
       />
       <div className="overflow-x-auto">
