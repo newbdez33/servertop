@@ -9,6 +9,11 @@ export interface LlmServerConfig {
   name?: string;
   url: string;
   apiKey?: string;
+  /** "openai" (default) queries /v1/models; "http" only checks reachability —
+   *  any HTTP response counts as up (for WS gateways and other non-OpenAI services). */
+  probe?: 'openai' | 'http';
+  /** Static model label for servers whose API can't report one. */
+  model?: string;
 }
 
 /** Loads llm.json: `{"servers": [{name?, url, apiKey?}, …]}`. Never crashes. */
@@ -20,12 +25,23 @@ export function loadLlmConfig(file: string): LlmServerConfig[] {
     if (!Array.isArray(list)) throw new Error('expected {"servers": [...]} or a top-level array');
     const out: LlmServerConfig[] = [];
     for (const entry of list) {
-      const e = entry as { name?: unknown; url?: unknown; apiKey?: unknown } | null;
+      const e = entry as {
+        name?: unknown;
+        url?: unknown;
+        apiKey?: unknown;
+        probe?: unknown;
+        model?: unknown;
+      } | null;
       if (e && typeof e.url === 'string' && /^https?:\/\//i.test(e.url)) {
+        if (e.probe !== undefined && e.probe !== 'openai' && e.probe !== 'http') {
+          console.warn(`[servertop] llm: unknown probe ${JSON.stringify(e.probe)}, using "openai"`);
+        }
         out.push({
           url: e.url.replace(/\/+$/, ''),
           name: typeof e.name === 'string' && e.name ? e.name : undefined,
           apiKey: typeof e.apiKey === 'string' && e.apiKey ? e.apiKey : undefined,
+          probe: e.probe === 'http' ? 'http' : undefined,
+          model: typeof e.model === 'string' && e.model ? e.model : undefined,
         });
       } else {
         console.warn(`[servertop] llm: skipping invalid entry ${JSON.stringify(entry)}`);
@@ -108,35 +124,48 @@ export class LlmProber {
     let model: string | null = null;
     let contextLength: number | null = null;
     const t0 = Date.now();
-    try {
-      const res = await fetch(`${cfg.url}/v1/models`, {
-        headers,
-        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      });
-      latencyMs = Date.now() - t0;
-      if (res.ok) {
+    if (cfg.probe === 'http') {
+      // Reachability only: a WS gateway answers plain GETs with e.g. 426 —
+      // any HTTP response proves the service is alive
+      try {
+        await fetch(cfg.url, { headers, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+        latencyMs = Date.now() - t0;
         up = true;
-        const body = (await res.json().catch(() => null)) as {
-          data?: Array<{
-            id?: string;
-            context_length?: number;
-            top_provider?: { context_length?: number };
-          }>;
-        } | null;
-        const m = body?.data?.[0];
-        if (m) {
-          model = m.id ?? null;
-          contextLength = m.context_length ?? m.top_provider?.context_length ?? null;
-        }
+      } catch {
+        latencyMs = null;
       }
-    } catch {
-      latencyMs = null;
+    } else {
+      try {
+        const res = await fetch(`${cfg.url}/v1/models`, {
+          headers,
+          signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+        });
+        latencyMs = Date.now() - t0;
+        if (res.ok) {
+          up = true;
+          const body = (await res.json().catch(() => null)) as {
+            data?: Array<{
+              id?: string;
+              context_length?: number;
+              top_provider?: { context_length?: number };
+            }>;
+          } | null;
+          const m = body?.data?.[0];
+          if (m) {
+            model = m.id ?? null;
+            contextLength = m.context_length ?? m.top_provider?.context_length ?? null;
+          }
+        }
+      } catch {
+        latencyMs = null;
+      }
     }
+    model = model ?? cfg.model ?? null;
 
     // Vanilla llama.cpp exposes /slots — probe until it says no
     let slotsTotal: number | null = null;
     let slotsBusy: number | null = null;
-    if (up && this.slotsSupport.get(cfg.url) !== false) {
+    if (up && cfg.probe !== 'http' && this.slotsSupport.get(cfg.url) !== false) {
       try {
         const res = await fetch(`${cfg.url}/slots`, {
           headers,

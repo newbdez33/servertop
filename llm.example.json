@@ -1,7 +1,8 @@
 {
-  "$comment": "ServerTop LLM servers — copy to llm.json next to the app (Docker: mount as /app/llm.json) and restart. Each entry is an OpenAI-compatible endpoint (llama.cpp, vLLM, Ollama, custom). Probed every 15s: /v1/models gives up/latency/model/context; vanilla llama.cpp also reports busy slots via /slots; local servers get process CPU/memory via their listening port (needs lsof).",
+  "$comment": "ServerTop LLM servers — copy to llm.json next to the app (Docker: mount as /app/llm.json) and restart. Each entry is probed every 15s. Default probe queries the OpenAI-compatible /v1/models (llama.cpp, vLLM, Ollama, custom) for up/latency/model/context; vanilla llama.cpp also reports busy slots via /slots. Set \"probe\": \"http\" for non-OpenAI services (e.g. WebSocket gateways): any HTTP response counts as up, latency is the round-trip, and the optional static \"model\" fills the label. Local servers additionally get process CPU/memory via their listening port (needs lsof).",
   "servers": [
     { "name": "DeepSeek V4 Flash", "url": "http://127.0.0.1:8000" },
-    { "name": "MiniMax M2.5", "url": "http://127.0.0.1:11434", "apiKey": "your-api-key" }
+    { "name": "MiniMax M2.5", "url": "http://127.0.0.1:11434", "apiKey": "your-api-key" },
+    { "name": "Qwen3 ASR", "url": "http://127.0.0.1:10098", "probe": "http", "model": "Qwen/Qwen3-ASR-1.7B" }
   ]
 }

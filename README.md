@@ -31,7 +31,8 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
   `~/.codex` exist on the monitored host)
 - **LLM servers** — probe OpenAI-compatible endpoints (llama.cpp, vLLM, Ollama,
   custom): up/down, latency, model & context, llama.cpp slot usage, and the
-  serving process's CPU/memory
+  serving process's CPU/memory; non-OpenAI services (e.g. WebSocket gateways)
+  can use `"probe": "http"` for reachability + latency with a static model label
 - **Configurable layout** — a server-side JSON file picks which cards show,
   their order, widths and row limits (the web UI stays read-only)
 - **Live** — 2s WebSocket push, automatic reconnect, REST polling fallback
@@ -87,7 +88,7 @@ Everything is configured through environment variables — the web UI is a pure 
 | `LAYOUT_FILE` | `layout.json` | Path to the optional dashboard-layout JSON (see below) |
 | `CLAUDE_DIR` | `~/.claude` | Claude Code data dir for the sessions card; card auto-hides when absent. Docker: mount `~/.claude:/app/.claude:ro` and set `CLAUDE_DIR=/app/.claude` |
 | `CODEX_DIR` | `~/.codex` | Codex CLI data dir for the sessions card; same auto-hide and Docker mount pattern |
-| `LLM_FILE` | `llm.json` | Optional LLM-servers JSON (see [`llm.example.json`](llm.example.json)): `{"servers": [{"name?", "url", "apiKey?"}]}` — probed every 15s; card auto-hides when the file is absent |
+| `LLM_FILE` | `llm.json` | Optional LLM-servers JSON (see [`llm.example.json`](llm.example.json)): `{"servers": [{"name?", "url", "apiKey?", "probe?": "openai"\|"http", "model?"}]}` — probed every 15s; card auto-hides when the file is absent |
 
 ### Dashboard layout (optional)
 
