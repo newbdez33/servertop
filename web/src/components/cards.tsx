@@ -64,6 +64,16 @@ export function CpuTile({
   system,
 }: CardBase & TileData & { system: SystemInfo | null }) {
   const { cpu } = snapshot;
+  let lastTemp = cpu.tempC ?? 0;
+  const tempSeries =
+    cpu.tempC === null
+      ? []
+      : [
+          {
+            values: history.slice(-30).map(h => (lastTemp = h.temp ?? lastTemp)),
+            color: 'var(--temp)',
+          },
+        ];
   return (
     <Tile
       className={className}
@@ -93,7 +103,7 @@ export function CpuTile({
           )}
         </>
       }
-      series={[{ values: spark(history, h => h.cpu), color: 'var(--cpu)' }]}
+      series={[{ values: spark(history, h => h.cpu), color: 'var(--cpu)' }, ...tempSeries]}
     />
   );
 }

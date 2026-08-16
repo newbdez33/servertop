@@ -69,6 +69,8 @@ export interface HistoryPoint {
   /** Default-interface rates, bytes per second */
   rx: number;
   tx: number;
+  /** CPU temperature °C (absent/null when no sensor) */
+  temp?: number | null;
 }
 
 export interface ProcessInfo {

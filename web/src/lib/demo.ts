@@ -180,6 +180,7 @@ export function createDemo(): Demo {
           mem: (m.mem.used / m.mem.total) * 100,
           rx: m.net[0].rxSec,
           tx: m.net[0].txSec,
+          temp: m.cpu.tempC,
         });
       }
       return points;

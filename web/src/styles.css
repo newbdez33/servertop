@@ -22,6 +22,7 @@
   --disk: #c8497f;
   --net-rx: #2a78d6;
   --net-tx: #eb6834;
+  --temp: #b8770a;
   /* Agent brand colors — theme-invariant, used for the session card icons */
   --claude: #d97757;
   --codex: #10a37f;
@@ -58,6 +59,7 @@
     --disk: #d55181;
     --net-rx: #3987e5;
     --net-tx: #d95926;
+    --temp: #e8a33d;
     --load-low: #35c948;
     --load-mid: #fab219;
     --load-high: #ef6b6b;
@@ -85,6 +87,7 @@
   --disk: #d55181;
   --net-rx: #3987e5;
   --net-tx: #d95926;
+  --temp: #e8a33d;
   --load-low: #35c948;
   --load-mid: #fab219;
   --load-high: #ef6b6b;

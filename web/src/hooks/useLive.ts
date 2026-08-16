@@ -70,6 +70,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
             mem: (m.mem.used / m.mem.total) * 100,
             rx: m.net[0].rxSec,
             tx: m.net[0].txSec,
+            temp: m.cpu.tempC,
           }].slice(-HISTORY_LEN),
         );
       };
@@ -108,6 +109,7 @@ export function useLive(onAuthFailed: () => void): LiveState {
         mem: m.mem.total ? (m.mem.used / m.mem.total) * 100 : 0,
         rx: primary?.rxSec ?? 0,
         tx: primary?.txSec ?? 0,
+        temp: m.cpu.tempC,
       };
       setHistory(h =>
         h.length && point.ts <= h[h.length - 1].ts ? h : [...h, point].slice(-HISTORY_LEN),

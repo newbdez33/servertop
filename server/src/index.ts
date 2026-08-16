@@ -38,6 +38,7 @@ async function main(): Promise<void> {
       mem: m.mem.total ? Math.round((m.mem.used / m.mem.total) * 1000) / 10 : 0,
       rx: primary?.rxSec ?? 0,
       tx: primary?.txSec ?? 0,
+      temp: m.cpu.tempC,
     });
   });
 
