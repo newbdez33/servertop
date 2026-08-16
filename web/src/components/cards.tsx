@@ -77,6 +77,20 @@ export function CpuTile({
         <>
           <span className="num">{cpu.perCore.length}</span> cores · load{' '}
           <span className="num">{cpu.load[0].toFixed(2)}</span>
+          {cpu.tempC !== null && (
+            <span
+              style={
+                cpu.tempC >= 90
+                  ? { color: 'var(--load-high)' }
+                  : cpu.tempC >= 80
+                    ? { color: 'var(--load-mid)' }
+                    : undefined
+              }
+            >
+              {' '}
+              · <span className="num">{cpu.tempC.toFixed(0)}</span>°C
+            </span>
+          )}
         </>
       }
       series={[{ values: spark(history, h => h.cpu), color: 'var(--cpu)' }]}
