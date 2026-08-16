@@ -905,7 +905,6 @@ export function LlmCard({
               <Th>Server</Th>
               <Th>Model</Th>
               <Th right className="@max-[28rem]:hidden">Ctx</Th>
-              <Th right>Slots</Th>
               <Th right className="@max-[28rem]:hidden">Ping</Th>
               <Th right>CPU</Th>
               <Th right>Mem</Th>
@@ -929,9 +928,6 @@ export function LlmCard({
                 </Td>
                 <Td right className="num @max-[28rem]:hidden">
                   {fmtCtx(s.contextLength)}
-                </Td>
-                <Td right className="num">
-                  {s.slotsTotal !== null ? `${s.slotsBusy}/${s.slotsTotal}` : '—'}
                 </Td>
                 <Td right className="num @max-[28rem]:hidden">
                   {s.latencyMs !== null ? `${s.latencyMs}ms` : '—'}
