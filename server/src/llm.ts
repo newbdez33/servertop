@@ -12,7 +12,8 @@ export interface LlmServerConfig {
   /** "openai" (default) queries /v1/models; "http" only checks reachability —
    *  any HTTP response counts as up (for WS gateways and other non-OpenAI services). */
   probe?: 'openai' | 'http';
-  /** Static model label for servers whose API can't report one. */
+  /** Static model label — overrides the API-reported id (multi-model servers
+   *  may list several; data[0] is not always the one being served). */
   model?: string;
 }
 
@@ -160,7 +161,7 @@ export class LlmProber {
         latencyMs = null;
       }
     }
-    model = model ?? cfg.model ?? null;
+    model = cfg.model ?? model ?? null;
 
     // Vanilla llama.cpp exposes /slots — probe until it says no
     let slotsTotal: number | null = null;
