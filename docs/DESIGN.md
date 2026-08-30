@@ -285,7 +285,9 @@ docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
 - 远程会话顶栏始终有 Disconnect 按钮（含对端关闭认证的情况），可随时换服务器
 - 在线演示为运行时参数 `?demo`（模拟数据，无后端）
 
-**Pages 发布**：当前为手动构建（`VITE_BASE=/servertop/`）推送 `gh-pages` 分支；
+**Pages 发布**：当前用 `npm run build:pages` 单独构建到 `web/dist-pages`，再手动推送
+该目录到 `gh-pages` 分支；本地 launchd 始终使用根路径构建的 `web/dist`，两套产物
+互不覆盖。
 `.github/pages.yml.disabled` 是备好的 Actions 自动部署工作流，待 gh token 补
 `workflow` scope 后启用并把 Pages 切回 workflow 模式。
 

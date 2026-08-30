@@ -3,8 +3,9 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // GitHub Pages serves from https://<user>.github.io/servertop/ — build with VITE_BASE=/servertop/
-  base: process.env.VITE_BASE ?? '/',
+  // Keep the normal build rooted at `/` for the local/hosted server. The
+  // dedicated build:pages script overrides this and writes to dist-pages.
+  base: '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {

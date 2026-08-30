@@ -9,6 +9,9 @@
 - Deploy changes with `npm test --workspace server`, `npm run build`, then
   `launchctl kickstart -k "gui/$(id -u)/dev.servertop"`. Verify the new PID,
   port 3000, `/api/auth/status`, and the service log.
+- Build GitHub Pages only with `npm run build:pages`; it writes to
+  `web/dist-pages`. Never use a Pages base path for the normal `npm run build`,
+  because launchd serves the root-based `web/dist` directory.
 - Do not print or commit `.env.local`, `layout.json`, `llm.json`, access tokens, or
   JWT secrets.
 - Do not run `docker compose up` on this Mac unless the user explicitly requests a

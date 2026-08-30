@@ -33,12 +33,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build --workspace web
-        env:
-          VITE_BASE: /servertop/
+      - run: npm run build:pages
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web/dist
+          path: web/dist-pages
       - id: deployment
         uses: actions/deploy-pages@v4

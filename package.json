@@ -11,6 +11,7 @@
     "dev:server": "npm run dev --workspace server",
     "dev:web": "npm run dev --workspace web",
     "build": "npm run build --workspace web && npm run build --workspace server",
+    "build:pages": "npm run build:pages --workspace web",
     "start": "node server/dist/server/src/index.js"
   }
 }

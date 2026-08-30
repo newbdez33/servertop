@@ -59,6 +59,21 @@ tail -n 30 "$HOME/Library/Logs/servertop.log"
 需要检查受保护 API 时，应从 `.env.local` 在本机临时读取 `ACCESS_TOKEN` 并换取 JWT；
 不得把 token、JWT 或 prompt 正文打印到终端记录、聊天消息或 Git 文件中。
 
+### GitHub Pages 构建隔离
+
+GitHub Pages 使用 `/servertop/` 子路径，而本地 launchd 实例从站点根路径 `/` 提供前端。
+两者必须使用不同的输出目录：
+
+```bash
+npm run build          # 本地/服务器：web/dist
+npm run build:pages    # GitHub Pages：web/dist-pages
+```
+
+手动发布 `gh-pages` 时只能复制 `web/dist-pages`。不要给普通 `npm run build` 设置 Pages
+base，也不要把 `web/dist-pages` 复制回 `web/dist`；否则本地首页会引用
+`/servertop/assets/...` 并导致静态资源 404。Pages 构建后无需重启本地服务，因为它不会
+改动本地部署目录。
+
 ### 常用诊断
 
 ```bash

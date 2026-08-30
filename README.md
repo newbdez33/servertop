@@ -157,6 +157,9 @@ policy). The included Caddy overlay gets a real Let's Encrypt certificate via
    as the Server URL, and sign in. The server address is stored in your browser
    (a client-side setting — the server itself still has no web-configurable state).
 
+Maintainers should build the Pages artifact with `npm run build:pages`. It writes
+to `web/dist-pages`, keeping the root-based local deployment in `web/dist` intact.
+
 ## API
 
 All endpoints require `Authorization: Bearer <jwt>` (obtained from `/api/auth/login`) unless auth is disabled.
