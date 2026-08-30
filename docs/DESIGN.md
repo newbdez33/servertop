@@ -305,8 +305,11 @@ docker compose logs -f servertop  # 查看日志
 - **Agent 会话卡**（卡片 id `claude` / `codex`，不在默认布局中）：分别扫描
   `CLAUDE_DIR/projects` 与 `CODEX_DIR/sessions` 下的会话 transcript（JSONL），
   增量解析（按 mtime+size 缓存；向前分块找标题，向后扫描找最后一条有效 prompt；
-  Codex 根据 `task_started` / `task_complete`，Claude 根据 `last-prompt` / `turn_duration`
-  判断 running / wait，并用 5 分钟无写入防止异常退出后状态陈旧；Git worktree 通过
+  Codex 根据 `task_started` / `task_complete` 判断状态；Claude 仅把主链真实 `user`
+  记录视为新一轮开始，以 `assistant.end_turn` / `turn_duration` 视为结束，`last-prompt`
+  只用于展示、不参与状态判断。Claude 的更新时间取最后一条真实活动事件时间，缺少
+  时间戳时才回退文件 mtime；running 状态另有 5 分钟活动窗口，防止异常退出后陈旧；
+  Git worktree 通过
   `.git/commondir` 或已知路径结构归并到主仓库目录名），60s 周期 + WS 推送；
   首次扫描延迟 1s 不阻塞启动
 - **LLM 服务卡**（卡片 id `llm`，不在默认布局中）：`llm.json`（模板 `llm.example.json`）

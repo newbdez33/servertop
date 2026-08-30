@@ -8,7 +8,7 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 
 <p align="center">
   <img src="docs/screenshots/detail-tiles.png" width="880" alt="Disk / network tiles and LLM servers card at actual size"><br>
-  <img src="docs/screenshots/detail-agents.png" width="660" alt="Claude Code sessions card at actual size">
+  <img src="docs/screenshots/detail-agents.png" width="854" alt="Claude Code sessions card at actual size">
 </p>
 
 <details>
@@ -27,8 +27,8 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Processes** — top consumers, sortable by CPU or memory
 - **Docker containers** — state, CPU, memory, uptime
 - **Claude Code & Codex sessions** — recent coding-agent sessions across
-  projects with the latest prompt and transcript-derived `running` / `wait`
-  status; linked worktrees are grouped under their main repository name
+  projects with the latest prompt, last activity time, and transcript-derived
+  `running` / `wait` status; linked worktrees are grouped under their main repository name
   (auto-enabled when `~/.claude` /
   `~/.codex` exist on the monitored host)
 - **LLM servers** — probe OpenAI-compatible endpoints (llama.cpp, vLLM, Ollama,
