@@ -44,6 +44,9 @@ test('Claude reports the latest real prompt and running/wait turn state', () => 
     const projectDir = path.join(root, 'projects', '-tmp-project');
     fs.mkdirSync(projectDir, { recursive: true });
     const transcript = path.join(projectDir, 'session.jsonl');
+    const activeAt = Date.now() - 2_000;
+    const toolAt = activeAt + 500;
+    const completedAt = Date.now() - 1_000;
     fs.writeFileSync(
       transcript,
       [
@@ -70,6 +73,7 @@ test('Claude reports the latest real prompt and running/wait turn state', () => 
         },
         {
           type: 'user',
+          timestamp: new Date(activeAt).toISOString(),
           isMeta: false,
           isSidechain: false,
           message: { content: 'Latest Claude prompt' },
@@ -78,6 +82,7 @@ test('Claude reports the latest real prompt and running/wait turn state', () => 
         { type: 'system', subtype: 'turn_duration', isSidechain: true, messageCount: 99 },
         {
           type: 'user',
+          timestamp: new Date(toolAt).toISOString(),
           isMeta: false,
           isSidechain: false,
           message: {
@@ -94,16 +99,25 @@ test('Claude reports the latest real prompt and running/wait turn state', () => 
     assert.equal(session.lastPrompt, 'Latest Claude prompt');
     assert.equal(session.status, 'running');
     assert.equal(session.active, true);
+    assert.equal(session.lastActiveAt, toolAt);
 
     fs.appendFileSync(
       transcript,
       [
         {
           type: 'assistant',
+          timestamp: new Date(completedAt - 100).toISOString(),
           isSidechain: false,
           message: { content: 'Finished', stop_reason: 'end_turn' },
         },
-        { type: 'system', subtype: 'turn_duration', messageCount: 4 },
+        {
+          type: 'system',
+          subtype: 'turn_duration',
+          timestamp: new Date(completedAt).toISOString(),
+          messageCount: 4,
+        },
+        { type: 'last-prompt', lastPrompt: 'Latest Claude prompt' },
+        { type: 'cost-state' },
       ].map(line).join(''),
     );
     session = scanner.scan().sessions[0];
@@ -111,6 +125,7 @@ test('Claude reports the latest real prompt and running/wait turn state', () => 
     assert.equal(session.status, 'wait');
     assert.equal(session.active, false);
     assert.equal(session.turns, 4);
+    assert.equal(session.lastActiveAt, completedAt);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

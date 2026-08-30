@@ -16,6 +16,7 @@ interface ParsedMeta {
   lastPrompt: string;
   gitBranch: string | null;
   startedAt: number | null;
+  lastActiveAt: number | null;
   turns: number | null;
   running: boolean;
 }
@@ -93,6 +94,7 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
     lastPrompt: '',
     gitBranch: null,
     startedAt: null,
+    lastActiveAt: null,
     turns: null,
     running: false,
   };
@@ -164,6 +166,7 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
     // This is not byte-capped: one very large tool result can otherwise hide
     // the prompt that started the current turn.
     let foundStatus = false;
+    let foundActivity = false;
     visitLinesReverse(fd, size, raw => {
       const probe = raw.toString('utf8', 0, Math.min(raw.length, 512));
       if (
@@ -177,14 +180,40 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
 
       try {
         const entry = JSON.parse(raw.toString('utf8')) as Record<string, unknown>;
+        const message = entry.message as { content?: unknown; stop_reason?: unknown } | undefined;
+        const mainUser = entry.type === 'user' && !entry.isMeta && !entry.isSidechain;
         let prompt = '';
         if (entry.type === 'last-prompt' && typeof entry.lastPrompt === 'string') {
           prompt = cleanText(entry.lastPrompt);
-        } else if (entry.type === 'user' && !entry.isMeta && !entry.isSidechain) {
-          const message = entry.message as { content?: unknown } | undefined;
+        } else if (mainUser) {
           prompt = cleanText(contentText(message?.content));
         }
         if (!isRealPrompt(prompt)) prompt = '';
+
+        if (!foundActivity) {
+          const hasToolResult =
+            mainUser &&
+            Array.isArray(message?.content) &&
+            message.content.some(
+              block =>
+                block &&
+                typeof block === 'object' &&
+                (block as { type?: unknown }).type === 'tool_result',
+            );
+          const meaningfulActivity =
+            (!entry.isSidechain && entry.type === 'assistant') ||
+            (mainUser && (Boolean(prompt) || hasToolResult)) ||
+            (!entry.isSidechain &&
+              entry.type === 'system' &&
+              entry.subtype === 'turn_duration');
+          if (meaningfulActivity) {
+            foundActivity = true;
+            if (typeof entry.timestamp === 'string') {
+              const timestamp = Date.parse(entry.timestamp);
+              if (Number.isFinite(timestamp)) meta.lastActiveAt = timestamp;
+            }
+          }
+        }
 
         if (!meta.lastPrompt && prompt) {
           meta.lastPrompt = truncate(prompt, PROMPT_MAX);
@@ -197,7 +226,8 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
           meta.turns = entry.messageCount;
         }
         if (!foundStatus) {
-          const message = entry.message as { stop_reason?: unknown } | undefined;
+          // `last-prompt` snapshots can be appended while a session is idle;
+          // only an actual main-chain user record starts a running turn.
           if (
             !entry.isSidechain &&
             ((entry.type === 'system' && entry.subtype === 'turn_duration') ||
@@ -205,7 +235,7 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
           ) {
             meta.running = false;
             foundStatus = true;
-          } else if (prompt) {
+          } else if (mainUser && prompt) {
             meta.running = true;
             foundStatus = true;
           }
@@ -213,7 +243,12 @@ function parseMeta(file: string, size: number, dirName: string): ParsedMeta {
       } catch {
         /* malformed line */
       }
-      return Boolean(meta.lastPrompt) && foundStatus && meta.turns !== null;
+      return (
+        Boolean(meta.lastPrompt) &&
+        foundStatus &&
+        meta.turns !== null &&
+        foundActivity
+      );
     });
   } catch {
     /* unreadable file — keep defaults */
@@ -276,8 +311,11 @@ export class ClaudeScanner {
             entry = { mtimeMs: st.mtimeMs, size: st.size, meta: parseMeta(file, st.size, dir) };
             this.cache.set(file, entry);
           }
+          // Claude may touch a transcript for metadata-only updates, so prefer
+          // the latest meaningful event timestamp. mtime is legacy fallback.
+          const lastActiveAt = entry.meta.lastActiveAt ?? Math.round(st.mtimeMs);
           const status =
-            entry.meta.running && now - st.mtimeMs < ACTIVE_WINDOW_MS ? 'running' : 'wait';
+            entry.meta.running && now - lastActiveAt < ACTIVE_WINDOW_MS ? 'running' : 'wait';
           const project = resolveProject(entry.meta.project);
           projects.add(project.root);
           sessions.push({
@@ -288,7 +326,7 @@ export class ClaudeScanner {
             lastPrompt: entry.meta.lastPrompt,
             gitBranch: entry.meta.gitBranch,
             startedAt: entry.meta.startedAt,
-            lastActiveAt: Math.round(st.mtimeMs),
+            lastActiveAt,
             turns: entry.meta.turns,
             sizeBytes: st.size,
             status,

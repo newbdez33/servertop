@@ -19,8 +19,6 @@ import {
   InfoIcon,
   MemIcon,
   NetIcon,
-  PauseIcon,
-  PlayIcon,
 } from './icons';
 import { Sparkline, type SparkSeries } from './Sparkline';
 import { TimeChart } from './TimeChart';
@@ -839,7 +837,7 @@ export function AgentSessionsCard({
               <Th>Project</Th>
               <Th>Last prompt</Th>
               <Th right>Turns</Th>
-              <Th right>Status</Th>
+              <Th right>Updated</Th>
             </tr>
           </thead>
           <tbody>
@@ -850,11 +848,21 @@ export function AgentSessionsCard({
               return (
                 <tr key={sess.id} className="hover:bg-surface-2">
                   <Td className="font-semibold">
-                    <span
-                      className="block max-w-[8rem] truncate"
-                      title={`${sess.project}${sess.gitBranch ? ` (${sess.gitBranch})` : ''}`}
-                    >
-                      {sess.projectName || basename(sess.project)}
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="inline-flex"
+                        title={status}
+                        role="img"
+                        aria-label={`Status: ${status}`}
+                      >
+                        <Dot tone={running ? 'good' : 'muted'} />
+                      </span>
+                      <span
+                        className="block max-w-[8rem] truncate"
+                        title={`${sess.project}${sess.gitBranch ? ` (${sess.gitBranch})` : ''}`}
+                      >
+                        {sess.projectName || basename(sess.project)}
+                      </span>
                     </span>
                   </Td>
                   <Td className="w-full max-w-0 text-ink-2">
@@ -865,18 +873,8 @@ export function AgentSessionsCard({
                   <Td right className="num">
                     {sess.turns ?? '—'}
                   </Td>
-                  <Td
-                    right
-                    className={running ? 'text-good' : 'text-ink-3'}
-                  >
-                    <span
-                      className="inline-flex size-4 items-center justify-center"
-                      title={status}
-                      role="img"
-                      aria-label={`Status: ${status}`}
-                    >
-                      {running ? <PlayIcon size={12} /> : <PauseIcon size={12} />}
-                    </span>
+                  <Td right className="num text-ink-3">
+                    {running ? 'now' : fmtAgo(sess.lastActiveAt)}
                   </Td>
                 </tr>
               );
