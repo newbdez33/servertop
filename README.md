@@ -27,7 +27,9 @@ A lightweight, self-hosted **single-server monitoring dashboard**. Run one Docke
 - **Processes** — top consumers, sortable by CPU or memory
 - **Docker containers** — state, CPU, memory, uptime
 - **Claude Code & Codex sessions** — recent coding-agent sessions across
-  projects with live "running" status (auto-enabled when `~/.claude` /
+  projects with the latest prompt and transcript-derived `running` / `wait`
+  status; linked worktrees are grouped under their main repository name
+  (auto-enabled when `~/.claude` /
   `~/.codex` exist on the monitored host)
 - **LLM servers** — probe OpenAI-compatible endpoints (llama.cpp, vLLM, Ollama,
   custom): up/down, latency, model & context, llama.cpp slot usage, and the
@@ -183,13 +185,23 @@ npm run dev:web      # Vite dev server on :5173, proxies /api and /ws
 
 Running the server natively (macOS/Linux) works for development — it reads whatever host it's on. The `/host` path rewriting only activates inside the Docker deployment.
 
+### Maintainer's macOS deployment
+
+The live instance in this checkout is a native Node.js process managed by the
+user LaunchAgent `dev.servertop`, not a Docker container. This preserves native
+macOS metrics; Docker Desktop deployment would primarily report its Linux VM.
+Build, restart, verification, logs, and the expected Docker-card behavior are
+documented in [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+
 ```
 server/   Express 5 + ws + systeminformation (TypeScript, ESM)
 web/      React 19 + Vite 7 + Tailwind CSS v4
 shared/   Type contracts shared by both
 ```
 
-Design doc (architecture, milestones): [`docs/DESIGN.md`](docs/DESIGN.md) · UI prototype: [`preview/ui-preview.html`](preview/ui-preview.html)
+Operations: [`docs/RUNBOOK.md`](docs/RUNBOOK.md) · Design doc (architecture,
+milestones): [`docs/DESIGN.md`](docs/DESIGN.md) · UI prototype:
+[`preview/ui-preview.html`](preview/ui-preview.html)
 
 ## License
 

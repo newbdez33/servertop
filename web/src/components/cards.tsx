@@ -19,6 +19,8 @@ import {
   InfoIcon,
   MemIcon,
   NetIcon,
+  PauseIcon,
+  PlayIcon,
 } from './icons';
 import { Sparkline, type SparkSeries } from './Sparkline';
 import { TimeChart } from './TimeChart';
@@ -835,38 +837,50 @@ export function AgentSessionsCard({
           <thead>
             <tr>
               <Th>Project</Th>
-              <Th>Session</Th>
+              <Th>Last prompt</Th>
               <Th right>Turns</Th>
-              <Th right>Active</Th>
+              <Th right>Status</Th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(sess => (
-              <tr key={sess.id} className="hover:bg-surface-2">
-                <Td className="font-semibold">
-                  <span className="flex items-center gap-1.5">
-                    <Dot tone={sess.active ? 'good' : 'muted'} />
+            {rows.map(sess => {
+              const prompt = sess.lastPrompt || sess.title;
+              const status = sess.status || (sess.active ? 'running' : 'wait');
+              const running = status === 'running';
+              return (
+                <tr key={sess.id} className="hover:bg-surface-2">
+                  <Td className="font-semibold">
                     <span
                       className="block max-w-[8rem] truncate"
                       title={`${sess.project}${sess.gitBranch ? ` (${sess.gitBranch})` : ''}`}
                     >
-                      {basename(sess.project)}
+                      {sess.projectName || basename(sess.project)}
                     </span>
-                  </span>
-                </Td>
-                <Td className="w-full max-w-0 text-ink-2">
-                  <span className="block truncate" title={sess.title}>
-                    {sess.title}
-                  </span>
-                </Td>
-                <Td right className="num">
-                  {sess.turns ?? '—'}
-                </Td>
-                <Td right className={`num ${sess.active ? 'font-semibold text-good' : 'text-ink-3'}`}>
-                  {sess.active ? 'now' : fmtAgo(sess.lastActiveAt)}
-                </Td>
-              </tr>
-            ))}
+                  </Td>
+                  <Td className="w-full max-w-0 text-ink-2">
+                    <span className="block truncate" title={prompt}>
+                      {prompt}
+                    </span>
+                  </Td>
+                  <Td right className="num">
+                    {sess.turns ?? '—'}
+                  </Td>
+                  <Td
+                    right
+                    className={running ? 'text-good' : 'text-ink-3'}
+                  >
+                    <span
+                      className="inline-flex size-4 items-center justify-center"
+                      title={status}
+                      role="img"
+                      aria-label={`Status: ${status}`}
+                    >
+                      {running ? <PlayIcon size={12} /> : <PauseIcon size={12} />}
+                    </span>
+                  </Td>
+                </tr>
+              );
+            })}
             {rows.length === 0 && (
               <tr>
                 <Td className="text-ink-3">No sessions</Td>

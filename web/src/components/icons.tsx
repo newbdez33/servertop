@@ -101,3 +101,16 @@ export const ZapIcon = (p: IconProps) => (
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </I>
 );
+
+export const PlayIcon = (p: IconProps) => (
+  <I {...p}>
+    <polygon points="7 4 20 12 7 20 7 4" />
+  </I>
+);
+
+export const PauseIcon = (p: IconProps) => (
+  <I {...p}>
+    <line x1="9" y1="5" x2="9" y2="19" />
+    <line x1="15" y1="5" x2="15" y2="19" />
+  </I>
+);

@@ -141,13 +141,19 @@ export interface SystemInfo {
   layout: DashboardLayout | null;
 }
 
+export type AgentSessionStatus = 'running' | 'wait';
+
 /** One coding-agent session (Claude Code / Codex), parsed from local JSONL transcripts */
 export interface AgentSession {
   id: string;
   /** Project working directory (from the transcript's cwd field) */
   project: string;
+  /** Main repository directory name (linked worktrees resolve to their source repo) */
+  projectName: string;
   /** First user prompt, truncated — the session "title" */
   title: string;
+  /** Most recent real user prompt, truncated */
+  lastPrompt: string;
   gitBranch: string | null;
   startedAt: number | null;
   /** epoch ms of last transcript write */
@@ -155,7 +161,9 @@ export interface AgentSession {
   /** Total message count when known */
   turns: number | null;
   sizeBytes: number;
-  /** Transcript written within the last few minutes */
+  /** Whether the latest turn is executing or waiting for another prompt */
+  status: AgentSessionStatus;
+  /** Backwards-compatible alias for status === 'running' */
   active: boolean;
 }
 

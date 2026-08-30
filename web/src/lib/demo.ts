@@ -243,12 +243,15 @@ function agentInfo(
   const sessions = rows.map(([id, project, gitBranch, title, minAgo, turns, active]) => ({
     id,
     project,
+    projectName: project.split('/').filter(Boolean).pop() ?? project,
     title,
+    lastPrompt: title,
     gitBranch,
     startedAt: now - minAgo * 60_000 - 3_600_000,
     lastActiveAt: now - minAgo * 60_000,
     turns,
     sizeBytes: turns * 40_000,
+    status: active ? ('running' as const) : ('wait' as const),
     active,
   }));
   return {

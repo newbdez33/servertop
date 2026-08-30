@@ -208,10 +208,12 @@ src/
 
 ---
 
-## 6. 部署与运维（仅 Docker 部署）
+## 6. 部署与运维
 
-本项目**只以 Docker 方式交付部署**。监控 agent 需要"看穿"容器隔离读取宿主机指标，
-因此 compose 中的特权配置是功能必需项，不是可选优化。
+Linux 服务器以 Docker 方式交付部署。监控 agent 需要"看穿"容器隔离读取宿主机指标，
+因此 compose 中的特权配置是功能必需项，不是可选优化。仓库维护者当前的 macOS 工作站
+是一个明确例外：为采集原生 Mac 指标，使用 launchd 运行原生 Node 进程，详见
+[`docs/RUNBOOK.md`](RUNBOOK.md)。
 
 ### 6.1 镜像
 
@@ -287,7 +289,7 @@ docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
 `.github/pages.yml.disabled` 是备好的 Actions 自动部署工作流，待 gh token 补
 `workflow` scope 后启用并把 Pages 切回 workflow 模式。
 
-### 6.5 运行与升级
+### 6.5 Linux Docker 运行与升级
 
 ```bash
 docker compose up -d --build      # 首次部署 / 本地构建升级
@@ -302,9 +304,11 @@ docker compose logs -f servertop  # 查看日志
   前端照单渲染；文件缺失或非法回退默认布局（仅告警不崩溃）；修改后重启生效
 - **Agent 会话卡**（卡片 id `claude` / `codex`，不在默认布局中）：分别扫描
   `CLAUDE_DIR/projects` 与 `CODEX_DIR/sessions` 下的会话 transcript（JSONL），
-  增量解析（按 mtime+size 缓存；Claude 分块流式找标题：压缩摘要 > 首条有效 prompt >
-  assistant 首句；Codex 用子串预过滤跳过 function_call 噪音行），60s 周期 + WS 推送；
-  mtime 5 分钟内标记为 running；首次扫描延迟 1s 不阻塞启动
+  增量解析（按 mtime+size 缓存；向前分块找标题，向后扫描找最后一条有效 prompt；
+  Codex 根据 `task_started` / `task_complete`，Claude 根据 `last-prompt` / `turn_duration`
+  判断 running / wait，并用 5 分钟无写入防止异常退出后状态陈旧；Git worktree 通过
+  `.git/commondir` 或已知路径结构归并到主仓库目录名），60s 周期 + WS 推送；
+  首次扫描延迟 1s 不阻塞启动
 - **LLM 服务卡**（卡片 id `llm`，不在默认布局中）：`llm.json`（模板 `llm.example.json`）
   配置若干 OpenAI 兼容端点，15s 探测 `/v1/models`（存活/延迟/模型/上下文），原版
   llama.cpp 追加 `/slots` 忙闲（自动探测能力并记忆），本机端口经 `lsof` 关联服务进程
@@ -319,11 +323,22 @@ docker compose logs -f servertop  # 查看日志
 - **注意**：在 macOS 的 Docker Desktop 中运行时读到的是 Linux VM 的指标，仅用于开发调试；
   生产目标为 Linux 服务器
 
-### 6.1 目录结构
+### 6.6 macOS 当前实例（launchd）
+
+- 工作目录：`/Users/jacky/projects/dev/servertop`
+- 用户 LaunchAgent：`dev.servertop`
+- 发布流程：测试 → `npm run build` → `launchctl kickstart -k`
+- 配置与密钥：仓库外/被忽略的 `.env.local`，禁止写入文档或 Git
+- ServerTop 是宿主进程，因此 Docker 卡片不会显示自身；这是预期行为
+- 完整发布、验证与故障排查命令以 [`docs/RUNBOOK.md`](RUNBOOK.md) 为准
+
+### 6.7 目录结构
 
 ```
 servertop/
+├── AGENTS.md                # Agent 操作约束（含实际部署入口）
 ├── docs/DESIGN.md           # 本文档
+├── docs/RUNBOOK.md          # 发布、验证与故障排查
 ├── preview/ui-preview.html  # UI 静态预览（模拟数据）
 ├── Dockerfile               # 多阶段构建（node:22-slim）
 ├── docker-compose.yml       # 部署模板（pid/network host + 只读挂载）

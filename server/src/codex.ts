@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { contentText, readChunk } from './claude.js';
+import { contentText, readChunk, visitLinesReverse } from './claude.js';
+import { resolveProject } from './project.js';
 import type { AgentSession, AgentSessionsInfo } from '../../shared/types.js';
 
 const CHUNK_BYTES = 256 * 1024;
@@ -8,6 +9,7 @@ const SCAN_CAP_BYTES = 2 * 1024 * 1024;
 const ACTIVE_WINDOW_MS = 5 * 60_000;
 const MAX_SESSIONS = 30;
 const TITLE_MAX = 80;
+const PROMPT_MAX = 160;
 
 // Lines worth JSON-parsing — everything else (function calls, reasoning,
 // token counts …) is skipped on a cheap substring check
@@ -16,9 +18,11 @@ const INTERESTING = ['session_meta', 'user_message', 'agent_message', '"message"
 interface ParsedMeta {
   project: string;
   title: string;
+  lastPrompt: string;
   gitBranch: string | null;
   startedAt: number | null;
   turns: number | null;
+  running: boolean;
 }
 
 interface CacheEntry {
@@ -31,11 +35,17 @@ function parseMeta(file: string, size: number): ParsedMeta {
   const meta: ParsedMeta = {
     project: '',
     title: '',
+    lastPrompt: '',
     gitBranch: null,
     startedAt: null,
     turns: null,
+    running: false,
   };
-  const truncate = (t: string): string => (t.length > TITLE_MAX ? `${t.slice(0, TITLE_MAX)}…` : t);
+  const truncate = (text: string, max: number): string =>
+    text.length > max ? `${text.slice(0, max)}…` : text;
+  const clean = (text: string): string => text.replace(/\s+/g, ' ').trim();
+  const realPrompt = (text: string): boolean =>
+    Boolean(text) && !text.startsWith('<') && !text.startsWith('[');
   let assistantFallback = '';
   let messages = 0;
 
@@ -50,23 +60,23 @@ function parseMeta(file: string, size: number): ParsedMeta {
       return;
     }
     if (entry.type === 'event_msg' && payload.type === 'user_message') {
-      const text = String(payload.message ?? '').replace(/\s+/g, ' ').trim();
-      if (!meta.title && text.length >= 4 && !text.startsWith('<') && !text.startsWith('[')) {
-        meta.title = truncate(text);
+      const text = clean(String(payload.message ?? ''));
+      if (!meta.title && text.length >= 4 && realPrompt(text)) {
+        meta.title = truncate(text, TITLE_MAX);
       }
       return;
     }
     if (entry.type === 'event_msg' && payload.type === 'agent_message' && !assistantFallback) {
-      const text = String(payload.message ?? '').replace(/\s+/g, ' ').trim();
-      if (text.length >= 10) assistantFallback = truncate(text);
+      const text = clean(String(payload.message ?? ''));
+      if (text.length >= 10) assistantFallback = truncate(text, TITLE_MAX);
       return;
     }
     if (entry.type === 'response_item' && payload.type === 'message') {
       messages++;
       if (!meta.title && payload.role === 'user') {
-        const text = contentText(payload.content).replace(/\s+/g, ' ').trim();
-        if (text.length >= 4 && !text.startsWith('<') && !text.startsWith('[')) {
-          meta.title = truncate(text);
+        const text = clean(contentText(payload.content));
+        if (text.length >= 4 && realPrompt(text)) {
+          meta.title = truncate(text, TITLE_MAX);
         }
       }
     }
@@ -99,6 +109,70 @@ function parseMeta(file: string, size: number): ParsedMeta {
       leftover = data;
     }
     scannedAll = cap === size;
+
+    // Find the newest real user message and the latest task lifecycle event.
+    // Reverse scanning avoids reading old history in the common case while
+    // still crossing arbitrarily large tool-output records when necessary.
+    let foundLifecycle = false;
+    let legacyRunning: boolean | null = null;
+    visitLinesReverse(fd, size, raw => {
+      const probe = raw.toString('utf8', 0, Math.min(raw.length, 512));
+      const lifecycleOrMessageEvent =
+        probe.includes('"type":"event_msg"') &&
+        ['task_started', 'task_complete', 'turn_aborted', 'user_message', 'agent_message'].some(
+          type => probe.includes(`"type":"${type}"`),
+        );
+      const responseMessage =
+        probe.includes('"type":"response_item"') && probe.includes('"type":"message"');
+      if (!lifecycleOrMessageEvent && !responseMessage) {
+        return false;
+      }
+
+      try {
+        const entry = JSON.parse(raw.toString('utf8')) as Record<string, unknown>;
+        const payload = (entry.payload ?? {}) as Record<string, unknown>;
+        let prompt = '';
+        if (entry.type === 'event_msg' && payload.type === 'user_message') {
+          prompt = clean(String(payload.message ?? ''));
+        } else if (
+          entry.type === 'response_item' &&
+          payload.type === 'message' &&
+          payload.role === 'user'
+        ) {
+          prompt = clean(contentText(payload.content));
+        }
+        if (!realPrompt(prompt)) prompt = '';
+
+        if (!meta.lastPrompt && prompt) {
+          meta.lastPrompt = truncate(prompt, PROMPT_MAX);
+        }
+        if (!foundLifecycle && entry.type === 'event_msg') {
+          if (payload.type === 'task_started') {
+            meta.running = true;
+            foundLifecycle = true;
+          } else if (payload.type === 'task_complete' || payload.type === 'turn_aborted') {
+            meta.running = false;
+            foundLifecycle = true;
+          }
+        }
+        if (legacyRunning === null) {
+          if (prompt) {
+            legacyRunning = true;
+          } else if (
+            (entry.type === 'event_msg' && payload.type === 'agent_message') ||
+            (entry.type === 'response_item' &&
+              payload.type === 'message' &&
+              payload.role === 'assistant')
+          ) {
+            legacyRunning = false;
+          }
+        }
+      } catch {
+        /* malformed line */
+      }
+      return Boolean(meta.lastPrompt) && foundLifecycle;
+    });
+    if (!foundLifecycle) meta.running = legacyRunning === true;
   } catch {
     /* unreadable file — keep defaults */
   } finally {
@@ -107,6 +181,7 @@ function parseMeta(file: string, size: number): ParsedMeta {
 
   meta.turns = scannedAll ? messages : null; // partial scans would under-count
   if (!meta.title) meta.title = assistantFallback || '(no prompt)';
+  if (!meta.lastPrompt) meta.lastPrompt = '(no prompt)';
   return meta;
 }
 
@@ -134,6 +209,8 @@ export class CodexScanner {
 
     const sessions: AgentSession[] = [];
     const seen = new Set<string>();
+    const projects = new Set<string>();
+    const now = Date.now();
     try {
       const entries = fs.readdirSync(this.sessionsDir, { recursive: true }) as string[];
       for (const rel of entries) {
@@ -152,16 +229,24 @@ export class CodexScanner {
           entry = { mtimeMs: st.mtimeMs, size: st.size, meta: parseMeta(file, st.size) };
           this.cache.set(file, entry);
         }
+        const status =
+          entry.meta.running && now - st.mtimeMs < ACTIVE_WINDOW_MS ? 'running' : 'wait';
+        const rawProject = entry.meta.project || '(unknown)';
+        const project = resolveProject(rawProject);
+        projects.add(project.root);
         sessions.push({
           id: path.basename(file, '.jsonl').slice(-12),
-          project: entry.meta.project || '(unknown)',
+          project: rawProject,
+          projectName: project.name,
           title: entry.meta.title,
+          lastPrompt: entry.meta.lastPrompt,
           gitBranch: entry.meta.gitBranch,
           startedAt: entry.meta.startedAt,
           lastActiveAt: Math.round(st.mtimeMs),
           turns: entry.meta.turns,
           sizeBytes: st.size,
-          active: Date.now() - st.mtimeMs < ACTIVE_WINDOW_MS,
+          status,
+          active: status === 'running',
         });
       }
     } catch (err) {
@@ -181,7 +266,7 @@ export class CodexScanner {
       sessions: sessions.slice(0, MAX_SESSIONS),
       stats: {
         totalSessions: sessions.length,
-        totalProjects: new Set(sessions.map(s => s.project)).size,
+        totalProjects: projects.size,
         sessionsToday: sessions.filter(s => s.lastActiveAt >= midnight).length,
         activeNow: sessions.filter(s => s.active).length,
       },
