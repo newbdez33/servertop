@@ -1,0 +1,13 @@
+HarmonyOS Sans SC font notice
+
+ServerTop uses unmodified HarmonyOS Sans SC Regular and Medium font files.
+
+Copyright 2021 Huawei Device Co., Ltd.
+Licensed under the HarmonyOS Sans Fonts License Agreement.
+
+Official source:
+https://developer.huawei.com/consumer/cn/design/resource-V1/
+
+The complete license distributed with the official font package is available
+beside this notice as LICENSE.txt. The font files must not be modified or sold
+on a stand-alone basis.

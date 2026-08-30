@@ -206,3 +206,8 @@ milestones): [`docs/DESIGN.md`](docs/DESIGN.md) · UI prototype:
 ## License
 
 [MIT](LICENSE)
+
+ServerTop uses unmodified HarmonyOS Sans SC Regular and Medium font files under
+Huawei's HarmonyOS Sans Fonts License Agreement. See
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the bundled
+[`LICENSE.txt`](web/public/fonts/harmonyos-sans/LICENSE.txt).

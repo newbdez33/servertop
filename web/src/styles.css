@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+/* HarmonyOS Sans SC — official, unmodified Huawei font files.
+   License/notice: public/fonts/harmonyos-sans/ */
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("./assets/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-312F, U+31A0-31BF,
+    U+31C0-31EF, U+3200-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+    U+FE10-FE1F, U+FE30-FE4F, U+FF00-FFEF, U+20000-2FA1F;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("./assets/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-312F, U+31A0-31BF,
+    U+31C0-31EF, U+3200-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+    U+FE10-FE1F, U+FE30-FE4F, U+FF00-FFEF, U+20000-2FA1F;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("./assets/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3100-312F, U+31A0-31BF,
+    U+31C0-31EF, U+3200-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF,
+    U+FE10-FE1F, U+FE30-FE4F, U+FF00-FFEF, U+20000-2FA1F;
+}
+
 /* ── Violet theme tokens (validated: CVD-safe + contrast) ─────────────── */
 :root {
   --page: #f3f2f6;
@@ -34,7 +69,7 @@
   --warn: #fab219;
   --crit: #d03b3b;
   --shadow: 0 1px 2px rgba(26, 23, 33, 0.04), 0 4px 16px rgba(26, 23, 33, 0.05);
-  --font-ui: "Avenir Next", Avenir, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-ui: "HarmonyOS Sans SC", "Avenir Next", Avenir, "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
 }
 
