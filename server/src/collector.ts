@@ -52,6 +52,7 @@ export function mapDisks(
       // macOS (dev machine) noise: system snapshots, simulator images, swap
       if (d.mount.startsWith('/System/Volumes/') && d.mount !== '/System/Volumes/Data') return false;
       if (d.mount.startsWith('/Library/Developer/')) return false;
+      if (d.mount.includes('/com.apple.security.cryptexd/')) return false;
       if (d.mount.startsWith('/private/var/vm')) return false;
       return true;
     });

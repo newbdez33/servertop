@@ -188,18 +188,13 @@ function Pie({
 export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
   const disks = snapshot.disk;
   const rootDisk = disks.find(d => d.mount === '/') ?? disks[0];
-  const alert = disks.reduce(
-    (worst, d) => (d.usedPct > 85 && d.usedPct > (worst?.usedPct ?? 0) ? d : worst),
-    null as (typeof disks)[number] | null,
-  );
-  const alertColor = alert && alert.usedPct > 95 ? 'var(--load-high)' : 'var(--load-mid)';
   return (
     <Tile
       className={className}
       i={i}
       label={rootDisk ? `Disk ${rootDisk.mount}` : 'Disk'}
       icon={<DiskIcon size={13} color="var(--disk)" />}
-      tooltip={disks.map(d => `${d.mount} ${d.usedPct.toFixed(1)}%`).join(' · ')}
+      tooltip={disks.map(d => `${d.mount} ${d.usedPct.toFixed(1)}%`).join('\n')}
       value={rootDisk ? rootDisk.usedPct.toFixed(1) : '—'}
       unit="%"
       valueColor={
@@ -214,16 +209,35 @@ export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
           <>
             <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
             <span className="num">{fmtGBdec(rootDisk.size)}</span> GB
-            {alert && (
-              <span style={{ color: alertColor }}>
-                {' '}
-                · ⚠ <span className="num">{alert.mount}</span>{' '}
-                <span className="num">{alert.usedPct.toFixed(0)}%</span>
-              </span>
-            )}
           </>
         ) : (
           'no data'
+        )
+      }
+      extra={
+        disks.length > 1 && (
+          <div className="flex flex-col gap-[1px]">
+            {disks.map(d => (
+              <div
+                key={d.mount}
+                className="flex items-center justify-between gap-2 text-[10.5px] leading-tight"
+              >
+                <span className="num min-w-0 truncate text-ink-2">{d.mount}</span>
+                <span
+                  className="num shrink-0 text-ink-3"
+                  style={
+                    d.usedPct > 95
+                      ? { color: 'var(--load-high)' }
+                      : d.usedPct > 85
+                        ? { color: 'var(--load-mid)' }
+                        : undefined
+                  }
+                >
+                  {d.usedPct.toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
         )
       }
       sparkSlot={
