@@ -330,7 +330,7 @@ docker compose logs -f servertop  # 查看日志
 
 ### 6.6 macOS 当前实例（launchd）
 
-- 工作目录：`/Users/jacky/projects/dev/servertop`
+- 工作目录：`/Volumes/shit/projects/servertop`
 - 用户 LaunchAgent：`dev.servertop`
 - 发布流程：测试 → `npm run build` → `launchctl kickstart -k`
 - 配置与密钥：仓库外/被忽略的 `.env.local`，禁止写入文档或 Git

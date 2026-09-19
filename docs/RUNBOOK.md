@@ -8,16 +8,21 @@ Linux 服务器使用 Docker Compose。部署前先确认目标机器，不要�
 
 | 项目 | 当前值 |
 |---|---|
-| 工作目录 | `/Users/jacky/projects/dev/servertop` |
+| 工作目录 | `/Volumes/shit/projects/servertop` |
 | 进程管理 | 用户级 launchd LaunchAgent |
 | launchd label | `dev.servertop` |
 | plist | `~/Library/LaunchAgents/dev.servertop.plist` |
-| 启动入口 | `node server/dist/server/src/index.js` |
+| 启动入口 | `node --env-file=.env.local server/dist/server/src/index.js` |
 | 服务端口 | `3000`（实际值以 `.env.local` 为准） |
 | 环境配置 | `.env.local`（被 Git 忽略，包含密钥，禁止输出或提交） |
 | 页面布局 | `layout.json`（被 Git 忽略） |
 | LLM 配置 | `llm.json`（被 Git 忽略） |
 | 日志 | `~/Library/Logs/servertop.log` |
+
+工作目录位于外接 USB 卷 `/Volumes/shit`。macOS TCC 默认禁止 launchd 启动的进程访问可移除卷，
+因此必须在「系统设置 → 隐私与安全性 → 完全磁盘访问」中为上述 `node` 二进制授权（macOS 26 的
+「文件和文件夹」面板不暴露「可移除卷」开关），否则进程会以 `EPERM uv_cwd` 退出。plist 直接调用 `node --env-file`，不经过 `sh`/`grep`，
+这样只需给 `node` 一个二进制授权。升级 Node 版本后路径变化需重新授权。
 
 采用原生进程是有意为之：它采集真实 macOS 主机指标，同时可以通过本机 Docker socket
 列出 Docker Desktop 容器。若把 ServerTop 放入 Docker Desktop，CPU、内存、进程和网络等

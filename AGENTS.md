@@ -3,7 +3,7 @@
 ## Deployment on Jacky's macOS workstation
 
 - Read [`docs/RUNBOOK.md`](docs/RUNBOOK.md) before deploying this checkout.
-- The live instance at `/Users/jacky/projects/dev/servertop` runs as a native Node.js
+- The live instance at `/Volumes/shit/projects/servertop` runs as a native Node.js
   process managed by the user LaunchAgent `dev.servertop`. It is not deployed with
   Docker Compose.
 - Deploy changes with `npm test --workspace server`, `npm run build`, then
