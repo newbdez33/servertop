@@ -204,16 +204,15 @@ export function DiskTile({ className, i, snapshot }: CardBase & TileData) {
             ? 'var(--load-mid)'
             : undefined
       }
-      ctx={
-        rootDisk ? (
+      note={
+        rootDisk && (
           <>
-            <span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
-            <span className="num">{fmtGBdec(rootDisk.size)}</span> GB
+            (<span className="num">{fmtGBdec(rootDisk.used)}</span> /{' '}
+            <span className="num">{fmtGBdec(rootDisk.size)}</span> GB)
           </>
-        ) : (
-          'no data'
         )
       }
+      ctx={rootDisk ? null : 'no data'}
       extra={
         disks.length > 1 && (
           <div className="flex flex-col gap-[1px]">
@@ -296,6 +295,7 @@ function Tile({
   sparkSlot,
   tooltip,
   valueColor,
+  note,
   extra,
   small = false,
 }: CardBase & {
@@ -308,6 +308,8 @@ function Tile({
   sparkSlot?: React.ReactNode;
   tooltip?: string;
   valueColor?: string;
+  /** Small grey aside rendered right after the value, e.g. "(822 / 995 GB)" */
+  note?: React.ReactNode;
   extra?: React.ReactNode;
   small?: boolean;
 }) {
@@ -324,11 +326,12 @@ function Tile({
         >
           {value}
           {unit && <small className="text-[11px] font-medium text-ink-3">{unit}</small>}
+          {note && <small className="ml-1 text-[10.5px] font-normal whitespace-nowrap text-ink-3">{note}</small>}
         </span>
         {sparkSlot ?? <Sparkline series={series} />}
       </div>
       {extra}
-      <span className="block truncate text-[10.5px] text-ink-3">{ctx}</span>
+      {ctx != null && <span className="block truncate text-[10.5px] text-ink-3">{ctx}</span>}
     </Card>
   );
 }
